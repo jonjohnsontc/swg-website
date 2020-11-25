@@ -16,4 +16,3 @@
  ::search-term
  (fn [db]
    (:search-term db)))
-

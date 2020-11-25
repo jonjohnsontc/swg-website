@@ -17,19 +17,6 @@
  (fn-traced [db [_ id name]]
     (assoc db id name)))
 
-(re-frame/reg-event-db
- ::search-input
- (fn [db [_ term]]
-   (assoc db :search-term term)))
-
-(comment                                        ;; I think this needs at least one more effect before this does anything
-  (re-frame/reg-event-fx                           ;; note the trailing -fx
-    ::issue-debounce                ;; usage:  (dispatch [:handler-with-debounce])
-    (fn [fx [_ value]]                    ;; the first param will be "world"
-      {:dispatch-debounce {:key :search
-                           :event [:search value]
-                           :delay 250}})))
-
 (re-frame/reg-event-fx
  ::get-neighbors
  (fn    
@@ -47,14 +34,22 @@
  ::get-writers
  (fn
    [{db :db} _]
-   (let [name (get-in db [:cs :wid])] ;TODO: Will probably have to grab name from a sub to the search bar
+   (let [name (get-in db [:search-term])] ;TODO: Will probably have to grab name from a sub to the search bar
      {:http-xhrio {:method          :get
                    :uri             (str "http://localhost:5000/writers/name_search/" name)
                    :format          (ajax/json-request-format)
                    :response-format (ajax/json-response-format {:keywords? true})
-                   :on-success      [:process-response]
+                   :on-success      [:writers-response]
                    :on-failure      [:bad-response]}
       :db  (assoc db :loading? true)})))
+
+(re-frame/reg-event-db
+ ::writers-response
+ (fn
+   [db [_ response]]
+   (-> db
+       (q/set-loading-state false)
+       (q/set-search-results response))))
 
 (re-frame/reg-event-db
  ::bad-response

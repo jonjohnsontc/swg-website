@@ -9,7 +9,8 @@
                  [com.7theta/re-frame-fx "0.2.1"]
                  [re-frame "1.1.1"]
                  [day8.re-frame/http-fx "0.2.1"] ; For requests
-                 [arttuka/reagent-material-ui "4.11.0-3"]] 
+                 [arttuka/reagent-material-ui "4.11.0-3"]
+                 [clj-commons/cljss "1.6.4"]] 
 
   :plugins [[lein-shadow "0.3.1"]
             [lein-shell "0.5.0"]]
