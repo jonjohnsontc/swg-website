@@ -1,6 +1,4 @@
-(ns swg-website.queries
-  (:require
-   [re-frame.core :as re-frame]))
+(ns swg-website.queries)
 
 (defn get-current-writer [db]
   (get-in db [:cs :wid]))
@@ -12,4 +10,7 @@
   (assoc db id val))
 
 (defn set-search-results [db results]
-  (assoc db :search-results results))
+  (assoc db :cs results))
+
+(defn set-error-message [db response]
+  (assoc db :error-msg response))

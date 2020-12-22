@@ -1,0 +1,77 @@
+.app {
+    height: 100vh;
+}
+
+/* the entire header */
+.header {
+    font-family: "Roboto";
+    border-bottom-width: 2px; 
+    border-bottom-color: #BB6BD9;
+    border-bottom-style: solid;
+    height: 7.5%;
+    width: 100%;
+}
+
+.home-area {
+    font-family: "Roboto";
+    height: 80%;
+    padding: 20% 25%;
+}
+
+.footer {
+    height: 10%;
+    padding-top: 7.5%;
+}
+
+/* the songwriter graph logo/text */
+.welcome {
+    position: relative;
+    display: inline-flex;  
+    height: 10%; 
+    font: 48px; 
+    padding-inline: 1%;
+}
+
+.options {
+    display: inline-flex;
+    align-items :center;
+}
+
+/* aka navigation */
+.options > div {
+    padding: 10%;
+}
+
+.prompt {
+    display: block;
+    padding-bottom: 2%;
+}
+
+.search-box {
+    width: 300px;
+}
+
+.search-area {
+    display: inline-flex;
+}
+
+.search-button {
+    display: inline-flex;
+    height: auto;
+    background-color: #BB6BD9;
+    color: #ffffff;
+}
+
+.search-button:hover, .search-button:focus {
+    color: #ffffff
+}
+
+/* I'd like to use something like this for all links as well
+ aka, a "consistent focus style" */
+/* #box:focus, 
+#box:hover, 
+.rc-input-text-inner:hover, 
+.rc-input-text-inner:focus {
+    border: none;
+    border-bottom: 2px solid #F2994A !important;
+} */

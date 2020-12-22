@@ -3,9 +3,9 @@
    [reagent.dom :as rdom]
    [re-frame.core :as re-frame]
    [swg-website.events :as events]
+   [swg-website.routes :as routes]
    [swg-website.views :as views]
-   [swg-website.config :as config]
-   ))
+   [swg-website.config :as config]))
 
 
 (defn dev-setup []
@@ -16,7 +16,7 @@
   (re-frame/clear-subscription-cache!)
   (let [root-el (.getElementById js/document "app")]
     (rdom/unmount-component-at-node root-el)
-    (rdom/render [views/main-panel] root-el)))
+    (rdom/render [views/main-panel-box-layout] root-el)))
 
 (defn init []
   (re-frame/dispatch-sync [::events/initialize-db])
