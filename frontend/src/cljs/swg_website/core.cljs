@@ -12,6 +12,15 @@
    [reitit.frontend :as rf]
    [reitit.frontend.easy :as rfe]))
 
+(defn href
+  "Return relative url for given route. Url can be used in HTML links."
+  ([k]
+   (href k nil nil))
+  ([k params]
+   (href k params nil))
+  ([k params query]
+   (rfe/href k params query)))
+
 (def routes
   ["/"
    ["home"
@@ -48,9 +57,29 @@
    on-navigate
    {:use-fragment true}))
 
-(defn nav []
+(defn alt-nav [{:keys [router active-route]}]
+  )
+
+(defn nav [{:keys [router active-route]}]
+  [:ul
+   (for [route-name (r/route-names router)
+         :let        [route (r/match-by-name router route-name)
+                      text  (-> route :data :link-text)]]
+     [:li {:key route-name}
+      (when (= route-name (-> route :data :name))
+        ">")
+      [:a {:href (href route-name)} text]])])
+
+(defn router-component [
+                        ;; {:keys [router]}
+                        ]
   (let [active-route @(re-frame/subscribe [::subs/active-route])]
-    (when active-route [(-> active-route :data :view)])))
+    ;; [:div
+    ;;  [nav {:router router :active-route active-route}]
+     (when active-route
+       [(-> active-route :data :view)])
+    ;; ]
+  ))
 
 (defn dev-setup []
   (when config/debug?
@@ -60,7 +89,7 @@
   (re-frame/clear-subscription-cache!)
   (let [root-el (.getElementById js/document "app")]
     (rdom/unmount-component-at-node root-el)
-    (rdom/render [nav {:router router}] root-el)))
+    (rdom/render [router-component {:router router}] root-el)))
 
 (defn init []
   (re-frame/dispatch-sync [::events/initialize-db])
