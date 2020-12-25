@@ -5,7 +5,7 @@
    [re-com.buttons :rename {md-circle-icon-button icon}
                    :refer [button]]
    [re-com.misc :refer [input-text]]
-   [re-com.text :refer [label]]
+   [re-com.text :refer [label title]]
    [swg-website.events :as events]
    [swg-website.subs :as subs]))
 
@@ -24,6 +24,15 @@
   [box
    :class "footer"
    :child "Copyright 2020 Jon Johnson"])
+
+;; TODO: on-click isn't giving the text a link to click on
+;; TODO: styles don't make this look like how it should yet
+(defn logo []
+  (let [name @(re-frame/subscribe [::subs/name])]
+    [label 
+      :class "welcome"
+      :label name
+      :on-click #(re-frame/dispatch [::events/push-state :routes/home])]))
 
 (defn nav-button [name on-change]
   [label
@@ -78,7 +87,8 @@
                             :children [[search-bar]
                                        [button 
                                         :label "Go" 
-                                        :class "search-button"]]]]]
+                                        :class "search-button"
+                                        :on-click #(re-frame/dispatch [::events/push-state :routes/search])]]]]]
                [footer]]]))
 
 (defn results-panel []
@@ -88,7 +98,12 @@
      :children [[h-box
                  :class "header"
                  :gap "5px"
-                 :children [[:h1.welcome @name][search-bar][button :label "Go" :class "search-button"][:div "About"][:div {:a "GitHub" :ref "https://github.com/jonjohnsontc/songwriter-graph"}]]]
+                 :children 
+                 [[:h1.welcome @name]
+                  [search-bar]
+                  [button :label "Go" :class "search-button"]
+                  [:div "About"]
+                  [:div {:a "GitHub" :ref "https://github.com/jonjohnsontc/songwriter-graph"}]]]
                 [box
                  :class "home-area"
                  :child [results-listing]]

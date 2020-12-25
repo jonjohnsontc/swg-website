@@ -10,6 +10,7 @@
     border-bottom-style: solid;
     height: 7.5%;
     width: 100%;
+    display: inline-flex;
 }
 
 .home-area {
@@ -34,12 +35,15 @@
 
 .options {
     display: inline-flex;
-    align-items :center;
+    align-items: center;
+    vertical-align: middle;
 }
 
 /* aka navigation */
 .options > div {
     padding: 10%;
+    padding-top: 25%;
+    display: inline;
 }
 
 .prompt {
@@ -66,7 +70,7 @@
     color: #ffffff
 }
 
-/* I'd like to use something like this for all links as well
+/* TODO: I'd like to use something like this for all links as well
  aka, a "consistent focus style" */
 /* #box:focus, 
 #box:hover, 

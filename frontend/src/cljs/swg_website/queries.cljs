@@ -10,7 +10,7 @@
   (assoc db id val))
 
 (defn set-search-results [db results]
-  (assoc db :cs results))
+  (assoc-in db [:cs :values] (js->clj results)))
 
 (defn set-error-message [db response]
   (assoc db :error-msg response))
