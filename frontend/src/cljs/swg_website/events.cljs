@@ -52,7 +52,7 @@
 (re-frame/reg-event-fx
  ::get-neighbors
  (fn    
-   [{db :db} _]     ;; <-- 1st argument is coeffect, from which we extract db 
+   [{db :db} _ [_ response]]     ;; <-- 1st argument is coeffect, from which we extract db 
     (let [wid (get-in db [:cs :wid])] ;TODO: Will probably have to grab wid from a sub to the search bar
       {:http-xhrio {:method          :get
                     :uri             (str "/neighbors/" wid)
@@ -60,7 +60,9 @@
                     :response-format (ajax/json-response-format {:keywords? true})
                     :on-success      [::process-response]
                     :on-failure      [::bad-response]}
-     :db  (assoc db :loading? true)})))
+       :db  (-> db
+                (assoc :loading? true)
+                (q/set-neighbors response))})))
 
 (re-frame/reg-event-fx
  ::get-writers
@@ -71,7 +73,7 @@
                    :uri             (str "/writers/name_search/" term)
                    :format          (ajax/json-request-format)
                    :response-format (ajax/json-response-format {:keywords? true})
-                   :on-success      [::writers-response]
+                   :on-success      [::get-neighbors]
                    :on-failure      [::bad-response]}
       :db  (assoc db :loading? true)})))
 

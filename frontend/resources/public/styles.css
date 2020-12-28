@@ -2,10 +2,12 @@
     --purple-1: #BB6BD9;
     --orange-1: #F2994A;
     --green-1: #6FCF97;
+    --off-white-1: #f6f4f4; 
 }
 
 .app {
     height: 100vh;
+    background-color: var(--off-white-1);
 }
 
 /* the entire header */

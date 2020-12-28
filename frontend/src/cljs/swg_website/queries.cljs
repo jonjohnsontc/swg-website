@@ -12,5 +12,8 @@
 (defn set-search-results [db results]
   (assoc-in db [:cs :values] (js->clj results)))
 
+(defn set-neighbors [db results]
+  (assoc-in db [:writer-matches] (js->clj results)))
+
 (defn set-error-message [db response]
   (assoc db :error-msg response))
