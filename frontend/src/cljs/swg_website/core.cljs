@@ -19,14 +19,13 @@
   ([k params query]
    (rfe/href k params query)))
 
-
 ;; If I don't namespace the route names, it will assume it's within
 ;; the namespace of whatever code is being executed :shrug: - not sure why
 (def routes
   ["/"
    [""
     {:name      :routes/home
-     :view      views/main-panel-box-layout
+     :view      views/main-panel
      :link-text "Home"
      :controllers
      [{;; Do whatever initialization needed for home page
@@ -40,7 +39,14 @@
      :link-text "Search"
      :controllers
      [{:start (fn [& params] (re-frame/dispatch [::events/get-writers]))
-       :stop  (fn [& params] (js/console.log "Leaving search"))}]}]])
+       :stop  (fn [& params] (js/console.log "Leaving search"))}]}]
+   ["writer"
+    {:name      :routes/writer
+     :view      views/writer-panel
+     :link-text "Writer"
+     :controllers
+     [{:start (fn [& params] (js/console.log "Entering writer page"))
+       :stop  (fn [& params] (js/console.log "Leaving writer page"))}]}]])
 
 (defn on-navigate [new-match]
   (when new-match

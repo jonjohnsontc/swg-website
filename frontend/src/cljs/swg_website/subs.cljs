@@ -18,6 +18,11 @@
    (:current-writer db)))
 
 (re-frame/reg-sub
+ ::writer-matches
+ (fn [db]
+   (:writer-matches db)))
+
+(re-frame/reg-sub
  ::search-term
  (fn [db]
    (:search-term db)))
