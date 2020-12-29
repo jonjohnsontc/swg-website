@@ -38,7 +38,7 @@
      :view      views/results-panel
      :link-text "Search"
      :controllers
-     [{:start (fn [& params] (re-frame/dispatch [::events/get-writers]))
+     [{:start (fn [& params] (js/console.log "Entering search"))
        :stop  (fn [& params] (js/console.log "Leaving search"))}]}]
    ["writer"
     {:name      :routes/writer

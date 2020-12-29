@@ -36,6 +36,7 @@
 
 ;; TODO: on-click isn't giving the text a link to click on
 ;; TODO: styles don't make this look like how it should yet
+;; TODO: should just render some SVG
 (defn logo []
   (let [name @(re-frame/subscribe [::subs/name])]
     [label 
@@ -43,21 +44,35 @@
       :label name
       :on-click #(re-frame/dispatch [::events/push-state :routes/home])]))
 
-(defn nav-button [name on-change]
+(defn nav-button 
+  "The links to the right of the logo and sometimes search bar up top"
+  [name on-change]
   [hyperlink
    :label name
    :on-change #(re-frame/dispatch [on-change %])
    :class (str name "-button")])
 
+(defn writer-result
+  "A single writer search result link"
+  [writer-map]
+  [:li.writer-result
+   [hyperlink
+    :label (trim (:writer_name writer-map))
+    :on-click #(re-frame/dispatch [::events/get-neighbors (:wid writer-map)])]])
+
+;; https://stackoverflow.com/questions/37164091/how-do-i-loop-through-a-subscribed-collection-in-re-frame-and-display-the-data-a/37186230#37186230
 (defn results-listing []
   (let [results (:values @(re-frame/subscribe [::subs/current-search]))]
     [:div
      [:div.sub-heading "Search Results"]
      [:div
-     (into [:ul] (map #(vector :li.writer-result
-                               [hyperlink :label (trim (:writer_name %))]
-                               [:div (:wid %)])
-                      results))]]))
+      (into [:ul] (map writer-result results))]]))
+
+;;  TODO: Finish
+(defn neighbors-result-listing
+  "List of nearest neighbors per writer"
+  []
+  (let [writer ()]))
 
 (defn search-bar []
   (let [term @(re-frame/subscribe [::subs/search-term])]
@@ -76,13 +91,7 @@
                 [box :child [:div.sub-heading "Closest Matches"]]
                 [box :child 
                  [:div.writer-matches 
-                  (into [:ul] (map #(vector :li.writer-result
-                                            [hyperlink
-                                             :label (:writer_name %)
-                                            ;;  Don't know if this will work yet
-                                             :on-click (search-for-neighbors %)])
-                                              writer-matches))]]]
-     ]))
+                  (into [:ul] (map writer-result writer-matches))]]]]))
 
 ;; TODO: Doesn't work - fix
 (defn header 
@@ -132,7 +141,7 @@
                                        [button 
                                         :label "Go" 
                                         :class "search-button"
-                                        :on-click #(re-frame/dispatch [::events/push-state :routes/search])]]]]]
+                                        :on-click #(re-frame/dispatch [::events/get-writers])]]]]]
                [footer]]]))
 
 (defn results-panel []
