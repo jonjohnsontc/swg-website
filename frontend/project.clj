@@ -33,7 +33,6 @@
                                :modules {:app {:init-fn swg-website.core/init
                                                :preloads [devtools.preload
                                                           day8.re-frame-10x.preload]}}
-
                                :devtools {:http-root "resources/public"
                                           :http-port 8280
                                           :proxy-url "http://localhost:5000"}
