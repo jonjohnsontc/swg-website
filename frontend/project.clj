@@ -9,11 +9,13 @@
                  [com.7theta/re-frame-fx "0.2.1"]
                  [re-frame "1.1.1"]
                  [day8.re-frame/http-fx "0.2.1"] ; For requests
-                 [arttuka/reagent-material-ui "4.11.0-3"]
-                 [clj-commons/cljss "1.6.4"]] 
+                 [re-com "2.9.0"]
+                 [metosin/reitit "0.5.5"]]
+  
 
   :plugins [[lein-shadow "0.3.1"]
-            [lein-shell "0.5.0"]]
+            [lein-shell "0.5.0"]
+            [lein-cljfmt "0.7.0"]]
 
   :min-lein-version "2.9.0"
 
@@ -31,11 +33,11 @@
                                :modules {:app {:init-fn swg-website.core/init
                                                :preloads [devtools.preload
                                                           day8.re-frame-10x.preload]}}
-
                                :devtools {:http-root "resources/public"
-                                          :http-port 8280}
+                                          :http-port 8280
+                                          :proxy-url "http://localhost:5000"}
                                :closure-defines {"re_frame.trace.trace_enabled_QMARK_" true
-                                                 "day8.re_frame.tracing.trace_enabled_QMARK_"  true}}}}
+                                                 "day8.re_frame.tracing.trace_enabled_QMARK_" true}}}}
 
   :shell {:commands {"karma" {:windows         ["cmd" "/c" "karma"]
                               :default-command "karma"}
@@ -74,6 +76,6 @@
                    [day8.re-frame/tracing "0.5.3"]]
     :source-paths ["dev"]}
 
-   :prod {}}
+   :prod {}})
 
-  :prep-tasks [])
+  :prep-tasks []

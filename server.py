@@ -1,6 +1,7 @@
 import os
 
 from flask import Flask
+from flask_cors import CORS
 from flask_marshmallow import Marshmallow
 from flask_restful import Api, Resource, fields
 from flask_sqlalchemy import SQLAlchemy
@@ -21,6 +22,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 api = Api(app)
 ma = Marshmallow(app)
+CORS(app)
 
 class Neighbors(db.Model):
     wid = db.Column(db.Integer, primary_key=True)
@@ -67,13 +69,13 @@ class Writers(db.Model):
 # Schema for API
 # TODO: Separate into another file
 
-class NeighborsSchema(ma.Schema):
+class NeighborsSchema(ma.SQLAlchemySchema):
     class Meta:
         fields = ("wid", "top_match_1", "top_match_2", "top_match_3", "top_match_4", "top_match_5")
         model = Neighbors
 
 
-class WritersSchema(ma.Schema):
+class WritersSchema(ma.SQLAlchemySchema):
     class Meta:
         fields = ("wid", "writer_name", "ipi")
         model = Writers
@@ -93,7 +95,8 @@ class RetreiveNeighbors(Resource):
 
 class RetrieveWritersByName(Resource):
     def get(self, writers_name):
-        results = Writers.query.filter(Writers.writer_name.like(f"%{writers_name}%")).limit(50).all()
+        term = "%{}%".format(writers_name.upper())
+        results = Writers.query.filter(Writers.writer_name.like(term)).limit(50).all()
         return writers_schema_many.dump(results)
 
 
