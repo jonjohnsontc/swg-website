@@ -84,14 +84,43 @@ neighbors_schema = NeighborsSchema()
 writers_schema = WritersSchema()
 writers_schema_many = WritersSchema(many=True)
 
-# Methods to retrieve from API
+# Methods to retrieve from API (aka views)
 # TODO: Separate into another file
-
 class RetreiveNeighbors(Resource):
+    # TODO: Most of this GET could be abstracted into another func
     def get(self, wid):
+        """Retrieves the top 5 nearest neighbors for a given writer, 
+        and returns their name, wid, and IPI. Results will not be
+        ordered. e.g.,
+        {
+            "top_match_4": {
+                "writer_name": "BURRELL KIRK ",
+                "wid": 20782,
+                "ipi": "215959253" 
+            },
+            "top_match_2": {
+                "writer_name": "MARAJ ONIKA TANYA",
+                "wid": 15523,
+                "ipi": "477174720"
+            },
+        }
+                
+        """
         neighbors = Neighbors.query.get_or_404(wid)
-        return neighbors_schema.dump(neighbors)
-
+        initial = neighbors_schema.dump(neighbors)
+        filtered_initial = {}
+        for name in initial:
+            if "top_match" in name:
+                filtered_initial[name] = initial[name]
+        names_ids = Writers.query.filter(Writers.wid.in_([filtered_initial[i] for i in filtered_initial]))
+        names_results = writers_schema_many.dump(names_ids)
+        results_to_send_back = initial.copy()
+        del results_to_send_back['wid']
+        for record in results_to_send_back:
+            wid_to_retrieve = results_to_send_back[record]
+            # TODO: Consider adding default? Is this bad practice?
+            results_to_send_back[record] = next(filter(lambda x: x['wid'] == wid_to_retrieve, names_results))
+        return results_to_send_back
 
 class RetrieveWritersByName(Resource):
     def get(self, writers_name):
