@@ -104,7 +104,6 @@ class RetreiveNeighbors(Resource):
                 "ipi": "477174720"
             },
         }
-                
         """
         neighbors = Neighbors.query.get_or_404(wid)
         initial = neighbors_schema.dump(neighbors)
@@ -121,6 +120,7 @@ class RetreiveNeighbors(Resource):
             # TODO: Consider adding default? Is this bad practice?
             results_to_send_back[record] = next(filter(lambda x: x['wid'] == wid_to_retrieve, names_results))
         return results_to_send_back
+
 
 class RetrieveWritersByName(Resource):
     def get(self, writers_name):
