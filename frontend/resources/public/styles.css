@@ -19,6 +19,7 @@
     height: 7.5%;
     width: 100%;
     display: inline-flex;
+    margin-bottom: 3%;
 }
 
 .home-area {
@@ -114,6 +115,24 @@ li > div {
 
 .rc-box.display-flex {
     display: inline-flex;
+}
+
+.rc-box.display-flex.writer-detail {
+    display: block;
+    font-size: 3em;
+}
+
+.rc-box.display-flex.writer-detail.small {
+    display: block;
+    font-size: 2em;
+}
+
+/* TODO: Would love to make this a "node in a graph" looking, rather than just a circle */
+.display-circle {
+    background-color: var(--orange-1);
+    border-radius: 50%;
+    height: 200px;
+    width: 200px;
 }
 
 /* TODO: I'd like to use something like this for all links as well

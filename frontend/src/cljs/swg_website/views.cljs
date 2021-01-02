@@ -58,7 +58,7 @@
   [:li.writer-result
    [hyperlink
     :label (trim (:writer_name writer-map))
-    :on-click #(re-frame/dispatch [::events/get-neighbors (:wid writer-map)])]])
+    :on-click #(re-frame/dispatch [::events/get-neighbors writer-map])]])
 
 ;; https://stackoverflow.com/questions/37164091/how-do-i-loop-through-a-subscribed-collection-in-re-frame-and-display-the-data-a/37186230#37186230
 (defn results-listing []
@@ -68,11 +68,14 @@
      [:div
       (into [:ul] (map writer-result results))]]))
 
-;;  TODO: Finish
 (defn neighbors-result-listing
   "List of nearest neighbors per writer"
   []
-  (let [writer ()]))
+  (let [neighbors @(re-frame/subscribe [::subs/writer-matches])]
+    [:div
+     [:div.sub-heading "Closest Matches"]
+     [:div
+      (into [:ol] (map writer-result neighbors))]]))
 
 (defn search-bar []
   (let [term @(re-frame/subscribe [::subs/search-term])]
@@ -83,15 +86,12 @@
      :on-change #(re-frame/dispatch [::events/save-name :search-term %])]))
 
 (defn writer-body []
-  (let [writer @(re-frame/subscribe [::subs/current-writer])
-        writer-matches @(re-frame/subscribe [::subs/writer-matches])]
+  (let [writer @(re-frame/subscribe [::subs/current-writer])]
     [v-box
-     :children [[box :child [:div.writer-name (:writer-name writer)]]
-                [box :child [:div.ipi (:ipi writer)]]
-                [box :child [:div.sub-heading "Closest Matches"]]
-                [box :child 
-                 [:div.writer-matches 
-                  (into [:ul] (map writer-result writer-matches))]]]]))
+     :children [[box :child [:div.display-circle]]
+                [box :class "writer-detail" :child [:div (:writer_name writer)]]
+                [box :class "writer-detail small":child [:div (str "IPI: " (:ipi writer))]]
+                [neighbors-result-listing]]]))
 
 ;; TODO: Doesn't work - fix
 (defn header 
@@ -163,7 +163,7 @@
                 [footer]]]))
 
 (defn writer-panel []
-  (let [writer @(re-frame/subscribe [::subs/current-writer])]
+  (let [name (re-frame/subscribe [::subs/name])]
     [v-box
      :class "app"
      :children [[h-box

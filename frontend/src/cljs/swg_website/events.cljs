@@ -34,30 +34,33 @@
 ;; The event used to navigate to a another route
 (re-frame/reg-event-fx
  ::push-state
- (fn [db [_ & route]]
+ (fn-traced [db [_ & route]]
    {:push-state route}))
 
 ;; TODO: Figure out what's happening here
 (re-frame/reg-event-db
  ::navigated
- (fn [db [_ new-match]]
-   (let [old-match (:active-route db)
-         controllers (rfc/apply-controllers (:controllers old-match) new-match)]
-     (assoc db :active-route (assoc new-match :controllers controllers)))))
+ (fn-traced
+  [db [_ new-match]]
+  (let [old-match (:active-route db)
+        controllers (rfc/apply-controllers (:controllers old-match) new-match)]
+    (assoc db :active-route (assoc new-match :controllers controllers)))))
 
 ;; HTTP Request Related Events 
 ;; 
 (re-frame/reg-event-fx
  ::get-neighbors
  (fn-traced    
-  [{db :db} [_ wid]]     ;; <-- 1st argument is coeffect, from which we extract db
+  [{db :db} [_ writer-map]]     ;; <-- 1st argument is coeffect, from which we extract db
   {:http-xhrio {:method          :get
-                :uri             (str "/neighbors/" wid)
+                :uri             (str "/neighbors/" (:wid writer-map))
                 :format          (ajax/json-request-format)
                 :response-format (ajax/json-response-format {:keywords? true})
-                :on-success      [::neighbors-response]
+                :on-success      [::neighbors-response (:wid writer-map)]
                 :on-failure      [::bad-response]}
-   :db  (assoc db :loading? true)}))
+   :db  (-> db 
+            (assoc :loading? true)
+            (assoc :current-writer writer-map))}))
 
 (re-frame/reg-event-fx
  ::get-writers
@@ -68,27 +71,29 @@
                    :uri             (str "/writers/name_search/" term)
                    :format          (ajax/json-request-format)
                    :response-format (ajax/json-response-format {:keywords? true})
-                   :on-success      [::writers-response]
+                   ; We pass on the search term to the router,
+                   ; which hasn't yet loaded the page
+                   :on-success      [::writers-response term] 
                    :on-failure      [::bad-response]}
       :db  (assoc db :loading? true)})))
 
 (re-frame/reg-event-fx
  ::writers-response
  (fn-traced
-  [{db :db} [_ response]]
+  [{db :db} [_ term response]]
   {:db   (-> db
              (q/set-loading-state false)
              (q/set-search-results response))
-   :dispatch [::push-state :routes/search]}))
+   :dispatch [::push-state :routes/search {:term term}]}))
 
 (re-frame/reg-event-fx
  ::neighbors-response
  (fn-traced
-  [{db :db} [_ response]]
+  [{db :db} [_ wid response]]
   {:db   (-> db
              (q/set-loading-state false)
              (q/set-neighbors response))
-   :dispatch [::push-state :routes/writer]}))
+   :dispatch [::push-state :routes/writer {:wid wid}]}))
 
 (re-frame/reg-event-db
  ::bad-response
