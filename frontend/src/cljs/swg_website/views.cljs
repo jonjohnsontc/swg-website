@@ -12,15 +12,9 @@
 (defn update-search-term [term]
   (re-frame/dispatch [::events/save-name :search-term term]))
 
-(defn search-for-writer []
-  (re-frame/dispatch [::events/get-writers]))
-
-(defn search-for-neighbors [wid]
-  (re-frame/dispatch [::events/get-neighbors wid]))
-
 ;; Sub-panels
 (defn swg-logo []
-  [:div.logo
+  [:div
    [:a {:href "/" :on-click #(re-frame/dispatch [::events/push-state :routes/home])}
     [:svg {:fill "none" :viewBox "0 0 367 50" :height "50" :width "367"}
      [:path
@@ -32,34 +26,27 @@
      [:circle {:fill "#F2994A" :r "5" :cy "45" :cx "5"}]]]])
 
 (defn footer []
-  [:div.footer])
+  [:div])
 
-(defn writer-link
-  "Links to page corresponding to the wid of result"
-  [text]
-  [:a {:href (str "/neighbors/" text)} text])
-
-(defn ellipsis []
+(defn ellipsis [] ;; Not sure what `sr-only` is referring to
   [:div [:div.lds-ellipsis [:div] [:div] [:div] [:div] [:span.sr-only "Loading..."]]])
 
 (defn nav-button
   "The links to the right of the logo and sometimes search bar up top"
   [name on-click]
   (if (nil? on-click)
-    [:div [:a {:href "/" :class (str name "-button")}] name]
-    [:div [:a {:on-click #(re-frame/dispatch [on-click %])
-               :class (str name "-button")}] name]))
+    [:div [:a {:href "/"}] name]
+    [:div [:a {:on-click #(re-frame/dispatch [on-click %])}] name]))
 
 (defn go-button []
  [:button
-  {:class "search-button"
-   :on-click #(re-frame/dispatch [::events/get-writers])}])
+  {:on-click #(re-frame/dispatch [::events/get-writers])}])
 
 ;; TODO: Link should show router url (e.g: (str "/neighbors/" (:wid writer-map)))
 (defn writer-result
   "A single writer search result link"
   [writer-map]
-  [:li.writer-result
+  [:li
    [:a {:href ""
         :on-click #(re-frame/dispatch [::events/get-neighbors writer-map])}
     (trim (:writer_name writer-map))]])
@@ -68,7 +55,7 @@
 (defn results-listing []
   (let [results (:values @(re-frame/subscribe [::subs/current-search]))]
     [:div
-     [:div.sub-heading "Search Results"]
+     [:div "Search Results"]
      [:div
       (into [:ul] (map writer-result results))]]))
 
@@ -77,56 +64,56 @@
   []
   (let [neighbors @(re-frame/subscribe [::subs/writer-matches])]
     [:div
-     [:div.sub-heading "Closest Matches"]
+     [:div "Closest Matches"]
      [:div
       (into [:ol] (map writer-result neighbors))]]))
 
 (defn search-bar []
   (let [term @(re-frame/subscribe [::subs/search-term])]
     [:<>
-     [:input#box
+     [:input
       {:type "text"
        :value term
        :on-change #(update-search-term (-> %  .-target .-value))}]
-     [:div.white-space]
-     [:button.search-button
+     [:div]
+     [:button.button
       {:on-click #(re-frame/dispatch [::events/get-writers])} "Go"]]))
 
 (defn writer-body []
   (let [writer @(re-frame/subscribe [::subs/current-writer])]
     [:div [:div.display-circle]
-     [:div.writer-detail [:div (:writer_name writer)]]
-     [:div.writer-detail.small [:div (str "IPI: " (:ipi writer))]]
+     [:div [:div (:writer_name writer)]]
+     [:div [:div (str "IPI: " (:ipi writer))]]
      [neighbors-result-listing]]))
 
 (defn header
   "The header for the website. Does not include the search bar"
   []
-  [:div.header [swg-logo] [nav-button "About" nil] [nav-button "GitHub" nil]])
+  [:div [swg-logo] [nav-button "About" nil] [nav-button "GitHub" nil]])
 
 (defn header-w-search-bar
   "The header for the website. Includes search bar"
   []
-  [:div.header
+  [:div
    [swg-logo] [search-bar] [nav-button "About" nil] [nav-button "GitHub" nil]])
 
 ;; Panels
 ;; The main "frames" of the website
 (defn home []
-  [:div.app
+  [:div
    [header]
-   [:h2.prompt "Search for a writer here:"]
+   [:h2 "Search for a writer here:"]
    [search-bar]])
 
 (defn results-panel []
-  [:div.app
+  [:div
    [header-w-search-bar]
    [results-listing]
    [footer]])
 
 (defn writer-panel []
-  [:div.app
+  [:div
    [header-w-search-bar]
-   [:div.home-area
+   [:div
     [writer-body]]
    [footer]])
