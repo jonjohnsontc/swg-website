@@ -95,7 +95,7 @@ class RetreiveNeighbors(Resource):
         
         e.g.,
         
-        curl -X GET "http://url/neighbors/273"
+        curl -X GET ".../neighbors/273"
         
         [
             {
@@ -131,7 +131,9 @@ class RetreiveNeighbors(Resource):
 class RetrieveWritersByName(Resource):
     def get(self, writers_name):
         term = "%{}%".format(writers_name.upper())
-        results = Writers.query.filter(Writers.writer_name.like(term)).limit(50).all()
+        neighbors = Neighbors.query.with_entities(Neighbors.wid).all()
+        just_ids = [i[0] for i in neighbors]
+        results = Writers.query.filter(Writers.writer_name.like(term)).filter(Writers.wid.in_(just_ids)).limit(50).all()
         return writers_schema_many.dump(results)
 
 

@@ -13,6 +13,7 @@
 /* the entire header */
 .header {
     font-family: "Roboto";
+    /* background-color: #ffffff; */
     border-bottom-width: 2px; 
     border-bottom-color: #BB6BD9;
     border-bottom-style: solid;
@@ -20,6 +21,11 @@
     width: 100%;
     display: inline-flex;
     margin-bottom: 3%;
+}
+
+.logo {
+  position: relative;
+  top: 13px;
 }
 
 .home-area {
@@ -37,11 +43,12 @@
 
 /* the songwriter graph logo/text */
 .welcome {
-    position: relative;
     display: inline-flex;  
-    height: 10%; 
-    font: 48px; 
+    font-size: 36px; 
     padding-inline: 1%;
+    position: relative;
+    top: 12px;
+    /* margin-top: 15px; */
 }
 
 .options {
@@ -55,6 +62,11 @@
     padding: 10%;
     padding-top: 25%;
     display: inline;
+}
+
+.About-button, .GitHub-button {
+    position: relative;
+    top: 33px;
 }
 
 .prompt {
@@ -137,10 +149,75 @@ li > div {
 
 /* TODO: I'd like to use something like this for all links as well
  aka, a "consistent focus style" */
-/* #box:focus, 
-#box:hover, 
-.rc-input-text-inner:hover, 
-.rc-input-text-inner:focus {
-    border: none;
-    border-bottom: 2px solid #F2994A !important;
-} */
+ /* https://stackoverflow.com/a/44656484 */
+ input[type="text"] {
+   background: transparent;
+   border: none;
+   border-bottom: 1px solid #000000;
+   -webkit-box-shadow: none;
+   box-shadow: none;
+   border-radius: 0;
+ }
+ 
+ input[type="text"]:focus {
+   -webkit-box-shadow: none;
+   box-shadow: none;
+ } 
+
+ /* https://loading.io/css/ */
+ .lds-ellipsis {
+    display: inline-block;
+    position: relative;
+    width: 80px;
+    height: 80px;
+  }
+  .lds-ellipsis div {
+    position: absolute;
+    top: 33px;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: var(--green-1);
+    animation-timing-function: cubic-bezier(0, 1, 1, 0);
+  }
+  .lds-ellipsis div:nth-child(1) {
+    left: 8px;
+    animation: lds-ellipsis1 0.6s infinite;
+  }
+  .lds-ellipsis div:nth-child(2) {
+    left: 8px;
+    animation: lds-ellipsis2 0.6s infinite;
+  }
+  .lds-ellipsis div:nth-child(3) {
+    left: 32px;
+    animation: lds-ellipsis2 0.6s infinite;
+  }
+  .lds-ellipsis div:nth-child(4) {
+    left: 56px;
+    animation: lds-ellipsis3 0.6s infinite;
+  }
+  @keyframes lds-ellipsis1 {
+    0% {
+      transform: scale(0);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  @keyframes lds-ellipsis3 {
+    0% {
+      transform: scale(1);
+    }
+    100% {
+      transform: scale(0);
+    }
+  }
+  @keyframes lds-ellipsis2 {
+    0% {
+      transform: translate(0, 0);
+    }
+    100% {
+      transform: translate(24px, 0);
+    }
+  }
+

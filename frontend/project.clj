@@ -10,8 +10,8 @@
                  [re-frame "1.1.1"]
                  [day8.re-frame/http-fx "0.2.1"] ; For requests
                  [re-com "2.9.0"]
-                 [metosin/reitit "0.5.5"]]
-  
+                 [metosin/reitit "0.5.5"]
+                 [org.clojars.nathell/tagsoup "1.2.1"]]
 
   :plugins [[lein-shadow "0.3.1"]
             [lein-shell "0.5.0"]
@@ -76,6 +76,6 @@
                    [day8.re-frame/tracing "0.5.3"]]
     :source-paths ["dev"]}
 
-   :prod {}})
+   :prod {:closure-defines {:goog.DEBUG false}}})
 
   :prep-tasks []

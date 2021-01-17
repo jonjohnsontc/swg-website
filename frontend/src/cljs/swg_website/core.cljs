@@ -25,8 +25,7 @@
   ["/"
    [""
     {:name      :routes/home
-     :view      views/main-panel
-     :link-text "Home"
+     :view      views/results-panel
      :controllers
      [{;; Do whatever initialization needed for home page
        ;; I.e (re-frame/dispatch [::events/load-something-with-ajax])

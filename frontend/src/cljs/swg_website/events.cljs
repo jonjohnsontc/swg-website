@@ -66,7 +66,7 @@
  ::get-writers
  (fn
    [{db :db} _]
-   (let [term (get-in db [:search-term])] ;TODO: Will probably have to grab name from a sub to the search bar
+   (let [term (get-in db [:search-term])]
      {:http-xhrio {:method          :get
                    :uri             (str "/writers/name_search/" term)
                    :format          (ajax/json-request-format)
