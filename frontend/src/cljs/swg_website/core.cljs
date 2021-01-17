@@ -34,14 +34,14 @@
        :stop  (fn [& params] (js/console.log "Leaving home page"))}]}]
    ["search/q=:term"
     {:name      :routes/search
-     :view      views/main-panel
+     :view      views/results-panel
      :link-text "Search"
      :controllers
      [{:start (fn [& params] (js/console.log "Entering search"))
        :stop  (fn [& params] (js/console.log "Leaving search"))}]}]
    ["writer/:wid"
     {:name      :routes/writer
-     :view      views/main-panel
+     :view      views/writer-panel
      :link-text "Writer"
      :controllers
      [{:start (fn [& params] (js/console.log "Entering writer page"))

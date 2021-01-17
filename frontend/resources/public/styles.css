@@ -121,6 +121,11 @@ li > div {
     padding-right: 2px;
 }
 
+.white-space {
+  display: inline-flex;
+  width: 10px;
+}
+
 .rc-hyperlink.noselect {
     color: #000000;
 }
