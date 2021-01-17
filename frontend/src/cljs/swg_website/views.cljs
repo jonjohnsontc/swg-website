@@ -45,11 +45,10 @@
 (defn nav-button
   "The links to the right of the logo and sometimes search bar up top"
   [name on-click]
-  (if (nil? on-click) [:div [:a {:href "/"
-                           :class (str name "-button")}] name]
-      [:div [:a
-       {:on-click #(re-frame/dispatch [on-click %])
-        :class (str name "-button")}] name]))
+  (if (nil? on-click)
+    [:div [:a {:href "/" :class (str name "-button")}] name]
+    [:div [:a {:on-click #(re-frame/dispatch [on-click %])
+               :class (str name "-button")}] name]))
 
 (defn go-button []
  [:button
