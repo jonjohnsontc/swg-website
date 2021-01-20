@@ -90,42 +90,50 @@ class RetreiveNeighbors(Resource):
     # TODO: Most of this GET could be abstracted into another func
     def get(self, wid):
         """Retrieves the top 5 nearest neighbors for a given writer, 
-        and returns their name, wid, and IPI. Results will not be
-        ordered. e.g.,
-        {
-            "top_match_4": {
-                "writer_name": "BURRELL KIRK ",
-                "wid": 20782,
-                "ipi": "215959253" 
+        and returns their name, rank, wid, and ipi in a JSON array.
+        The values are sorted by rank. 
+        
+        e.g.,
+        
+        curl -X GET ".../neighbors/273"
+        
+        [
+            {
+                "ipi": "247688226",
+                "writer_name": "LORENZO IRVING DOMINGO",
+                "wid": 3684,
+                "rank": 1
             },
-            "top_match_2": {
-                "writer_name": "MARAJ ONIKA TANYA",
-                "wid": 15523,
-                "ipi": "477174720"
+            {
+                "ipi": "228477545",
+                "writer_name": "ROONEY MARK ",
+                "wid": 9222,
+                "rank": 2
             },
-        }
+            (etc, etc...)
+        ]
         """
         neighbors = Neighbors.query.get_or_404(wid)
         initial = neighbors_schema.dump(neighbors)
-        filtered_initial = {}
+        neighbor_records = {}
         for name in initial:
             if "top_match" in name:
-                filtered_initial[name] = initial[name]
-        names_ids = Writers.query.filter(Writers.wid.in_([filtered_initial[i] for i in filtered_initial]))
-        names_results = writers_schema_many.dump(names_ids)
-        results_to_send_back = initial.copy()
-        del results_to_send_back['wid']
+                neighbor_records[name] = initial[name]
+        names_ids = Writers.query.filter(Writers.wid.in_([neighbor_records[i] for i in neighbor_records]))
+        results_to_send_back = writers_schema_many.dump(names_ids)
         for record in results_to_send_back:
-            wid_to_retrieve = results_to_send_back[record]
-            # TODO: Consider adding default? Is this bad practice?
-            results_to_send_back[record] = next(filter(lambda x: x['wid'] == wid_to_retrieve, names_results))
-        return results_to_send_back
+            for rank in neighbor_records:
+                if neighbor_records[rank] == record["wid"]:
+                    record["rank"] = int(rank[-1])             
+        return sorted(results_to_send_back, key=lambda x: x["rank"])
 
 
 class RetrieveWritersByName(Resource):
     def get(self, writers_name):
         term = "%{}%".format(writers_name.upper())
-        results = Writers.query.filter(Writers.writer_name.like(term)).limit(50).all()
+        neighbors = Neighbors.query.with_entities(Neighbors.wid).all()
+        just_ids = [i[0] for i in neighbors]
+        results = Writers.query.filter(Writers.writer_name.like(term)).filter(Writers.wid.in_(just_ids)).limit(50).all()
         return writers_schema_many.dump(results)
 
 

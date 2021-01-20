@@ -9,6 +9,9 @@
 (defn set-id-val [db id val]
   (assoc db id val))
 
+(defn get-search-term [db]
+  (get db :search-term))
+
 (defn set-search-results [db results]
   (assoc-in db [:cs :values] (js->clj results)))
 

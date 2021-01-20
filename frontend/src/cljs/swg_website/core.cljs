@@ -25,22 +25,21 @@
   ["/"
    [""
     {:name      :routes/home
-     :view      views/main-panel
-     :link-text "Home"
+     :view      views/home
      :controllers
      [{;; Do whatever initialization needed for home page
        ;; I.e (re-frame/dispatch [::events/load-something-with-ajax])
        :start (fn [& params] (js/console.log "Entering home page"))
        ;; Teardown can be done here.
        :stop  (fn [& params] (js/console.log "Leaving home page"))}]}]
-   ["search"
+   ["search/q=:term"
     {:name      :routes/search
      :view      views/results-panel
      :link-text "Search"
      :controllers
      [{:start (fn [& params] (js/console.log "Entering search"))
        :stop  (fn [& params] (js/console.log "Leaving search"))}]}]
-   ["writer"
+   ["writer/:wid"
     {:name      :routes/writer
      :view      views/writer-panel
      :link-text "Writer"

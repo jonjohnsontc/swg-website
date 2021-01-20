@@ -31,3 +31,18 @@
  ::current-search
  (fn [db]
    (:cs db)))
+
+(re-frame/reg-sub
+ ::loading
+ (fn [db]
+   (:loading? db)))
+
+(re-frame/reg-sub
+ ::burger-menu
+ (fn [db]
+   (:burger-menu db)))
+
+(re-frame/reg-sub
+ ::search-bar-focus
+ (fn [db]
+   (:search-bar-focus db)))
