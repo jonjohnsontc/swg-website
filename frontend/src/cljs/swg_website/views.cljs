@@ -14,8 +14,8 @@
 
 ;; Sub-panels
 (defn swg-logo []
-  [:div
-   [:a {:href "/" :on-click #(re-frame/dispatch [::events/push-state :routes/home])}
+  [:div.is-inline-flex.navbar-item
+   [:a {:href "/" :on-click #(re-frame/dispatch [::events/clear-search-and-go-home])}
     [:svg {:fill "none" :viewBox "0 0 367 50" :height "50" :width "367"}
      [:path
       {:fill "black"
@@ -35,18 +35,22 @@
   "The links to the right of the logo and sometimes search bar up top"
   [name on-click]
   (if (nil? on-click)
-    [:div [:a {:href "/"}] name]
-    [:div [:a {:on-click #(re-frame/dispatch [on-click %])}] name]))
+    [:div.is-inline-flex.is-clickable.navbar-item.level-item [:a] name]
+    [:div.is-inline-flex.is-clickable.navbar-item.level-item
+     [:a {:on-click #(re-frame/dispatch [on-click %])}] name]))
 
-(defn go-button []
- [:button
-  {:on-click #(re-frame/dispatch [::events/get-writers])}])
+(defn go-button
+  "Typically displayed next to the search bar. Initiates search for writer"
+  []
+  [:button.button.is-primary.is-inline-flex.column.is-2.is-rounded
+   {:on-click #(re-frame/dispatch [::events/get-writers])} "Go"])
 
-;; TODO: Link should show router url (e.g: (str "/neighbors/" (:wid writer-map)))
+;; TODO: Link should show router url e.g., /neighbors/1234
+;;                             (cljs e.g., (str "/neighbors/" (:wid writer-map)))
 (defn writer-result
   "A single writer search result link"
   [writer-map]
-  [:li
+  [:li.writer-result
    [:a {:href ""
         :on-click #(re-frame/dispatch [::events/get-neighbors writer-map])}
     (trim (:writer_name writer-map))]])
@@ -54,9 +58,9 @@
 ;; https://stackoverflow.com/questions/37164091/how-do-i-loop-through-a-subscribed-collection-in-re-frame-and-display-the-data-a/37186230#37186230
 (defn results-listing []
   (let [results (:values @(re-frame/subscribe [::subs/current-search]))]
-    [:div
-     [:div "Search Results"]
-     [:div
+    [:div.info-content.column.is-7
+     [:div.subtitle.is-2 "Search Results"]
+     [:div.content   ;; 'content' class to show bullet points
       (into [:ul] (map writer-result results))]]))
 
 (defn neighbors-result-listing
@@ -65,19 +69,27 @@
   (let [neighbors @(re-frame/subscribe [::subs/writer-matches])]
     [:div
      [:div "Closest Matches"]
-     [:div
+     [:div.content   ;; 'content' class to show numbered list
       (into [:ol] (map writer-result neighbors))]]))
 
-(defn search-bar []
-  (let [term @(re-frame/subscribe [::subs/search-term])]
-    [:<>
-     [:input
+;; TODO: Wanna get a nice search bar animation for focus / clicking on it
+(defn search-bar 
+  "Search bar for the website. The one and only"
+  []
+  (let [term @(re-frame/subscribe [::subs/search-term])
+        loading? @(re-frame/subscribe [::subs/loading])
+        focus @(re-frame/subscribe [::subs/search-bar-focus])]
+    [:div.columns.search-bar {
+                              ;; Commented out until I deal with search bar focus
+                              ;; :tabindex 1
+                              ;; :on-click #(re-frame/dispatch [::events/toggle-search-bar-focus])
+                              }
+     [:input.input.column.is-10.is-rounded
       {:type "text"
        :value term
+       :class [(when (true? loading?) "is-loading")]
        :on-change #(update-search-term (-> %  .-target .-value))}]
-     [:div]
-     [:button.button
-      {:on-click #(re-frame/dispatch [::events/get-writers])} "Go"]]))
+     [go-button]]))
 
 (defn writer-body []
   (let [writer @(re-frame/subscribe [::subs/current-writer])]
@@ -89,31 +101,83 @@
 (defn header
   "The header for the website. Does not include the search bar"
   []
-  [:div [swg-logo] [nav-button "About" nil] [nav-button "GitHub" nil]])
+  [:div.header.level
+   [:div.columns.level-left
+    [:div.column [swg-logo]]
+    [:div.column.is-1 [nav-button "About" nil]]
+    [:div.column.is-narrow]
+    [:div.column.is-1  [nav-button "GitHub" nil]]]])
+
+;; TODO: Finish
+(defn header-w-args
+  "The header for the website. Does not include the search bar"
+  []
+  (let [toggle @(re-frame/subscribe [::subs/burger-menu])]
+    [:nav.navbar.is-white.is-spaced.is-tab.header 
+     {:role "navigation" :aria-label "main navigation"}
+     [:div.navbar-brand
+      [swg-logo]
+      [:a.navbar-burger {:role "button" :aria-label "menu" :aria-expanded "false"
+                         :class (when (= true toggle) "is-active")
+                         :on-click #(re-frame/dispatch [::events/toggle-burger-menu])}
+       [:span {:aria-hidden "true"}]
+       [:span {:aria-hidden "true"}]
+       [:span {:aria-hidden "true"}]]]
+     [:div.navbar-menu {:class (when (= true toggle) "is-active")}
+      [nav-button "About" nil]
+      [nav-button "GitHub" nil]
+      [:div.navbar-end]]]))
 
 (defn header-w-search-bar
-  "The header for the website. Includes search bar"
+  "The header for the website, including search bar"
   []
-  [:div
-   [swg-logo] [search-bar] [nav-button "About" nil] [nav-button "GitHub" nil]])
+  (let [toggle @(re-frame/subscribe [::subs/burger-menu])]
+    [:nav.navbar.is-white.is-spaced.is-tab.header
+     {:role "navigation" :aria-label "main navigation"}
+     [:div.navbar-brand
+      [swg-logo]
+      [:a.navbar-burger {:role "button" :aria-label "menu" :aria-expanded "false"
+                         :class (when (= true toggle) "is-active")
+                         :on-click #(re-frame/dispatch [::events/toggle-burger-menu])}
+       [:span {:aria-hidden "true"}]
+       [:span {:aria-hidden "true"}]
+       [:span {:aria-hidden "true"}]]]
+     [:div.navbar-menu.level {:class (when (= true toggle) "is-active")}
+      [:div.navbar-start]
+      [:div.navbar-item.level-item [search-bar]]
+      [nav-button "About" nil]
+      [nav-button "GitHub" nil]
+      [:div.navbar-end]]]))
+
+
+(defn home-content
+  "The main content within the landing page of the app"
+  [prompt]
+  [:div.home-content
+   [:div.columns [:div.column.is-1]
+    [:div.column.is-7 [:h2.subtitle.is-2 prompt]
+     [:div.column.is-full.my-5] 
+     [:div.columns.is-mobile 
+      [:div.column.is-two-thirds [search-bar]]]]]])
 
 ;; Panels
 ;; The main "frames" of the website
 (defn home []
-  [:div
-   [header]
-   [:h2 "Search for a writer here:"]
-   [search-bar]])
+  [:div.app
+   [header-w-args]
+   [home-content "Search for a writer here"]])
 
 (defn results-panel []
-  [:div
+  [:div.app
    [header-w-search-bar]
-   [results-listing]
+   [:div.columns 
+    [:div.column.is-1]
+    [results-listing]]
    [footer]])
 
 (defn writer-panel []
-  [:div
+  [:div.app
    [header-w-search-bar]
-   [:div
+   [:div.info-content
     [writer-body]]
    [footer]])

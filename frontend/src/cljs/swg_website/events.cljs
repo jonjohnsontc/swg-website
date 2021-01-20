@@ -28,29 +28,56 @@
 
 (re-frame/reg-event-db
  ::save-name
- (fn-traced [db [_ id name]]
+ (fn [db [_ id name]]
     (assoc db id name)))
+
+(re-frame/reg-event-db
+ ::clear-search
+ (fn [db [_]]
+   (assoc db :search-term nil)))
+
+(re-frame/reg-event-db
+ ::toggle-burger-menu
+ (fn [db [_]]
+   (let [burger-status (:burger-menu db)]
+     (if (= true burger-status)
+       (assoc db :burger-menu false)
+       (assoc db :burger-menu true)))))
+
+(re-frame/reg-event-db
+ ::toggle-search-bar-focus
+ (fn [db [_]]
+   (let [focus (:search-bar-focus db)]
+     (if (= true focus)
+       (assoc db :search-bar-focus false)
+       (assoc db :search-bar-focus true)))))
 
 ;; The event used to navigate to a another route
 (re-frame/reg-event-fx
  ::push-state
- (fn-traced [db [_ & route]]
+ (fn [db [_ & route]]
    {:push-state route}))
 
 ;; TODO: Figure out what's happening here
 (re-frame/reg-event-db
  ::navigated
- (fn-traced
+ (fn
   [db [_ new-match]]
   (let [old-match (:active-route db)
         controllers (rfc/apply-controllers (:controllers old-match) new-match)]
     (assoc db :active-route (assoc new-match :controllers controllers)))))
 
+(re-frame/reg-event-fx
+ ::clear-search-and-go-home
+ (fn [{db :db} [_]]
+   {:db (assoc db :search-term nil)
+   :dispatch [::push-state :routes/home]}))
+
 ;; HTTP Request Related Events 
 ;; 
 (re-frame/reg-event-fx
  ::get-neighbors
- (fn-traced    
+ (fn   
   [{db :db} [_ writer-map]]     ;; <-- 1st argument is coeffect, from which we extract db
   {:http-xhrio {:method          :get
                 :uri             (str "/neighbors/" (:wid writer-map))
@@ -79,7 +106,7 @@
 
 (re-frame/reg-event-fx
  ::writers-response
- (fn-traced
+ (fn
   [{db :db} [_ term response]]
   {:db   (-> db
              (q/set-loading-state false)
@@ -88,7 +115,7 @@
 
 (re-frame/reg-event-fx
  ::neighbors-response
- (fn-traced
+ (fn
   [{db :db} [_ wid response]]
   {:db   (-> db
              (q/set-loading-state false)
