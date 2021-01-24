@@ -3,11 +3,17 @@
    [ajax.core :as ajax]
    [re-frame.core :as re-frame]
    [day8.re-frame.http-fx]
+   [reitit.core :as r]
    [reitit.frontend.controllers :as rfc]
    [reitit.frontend.easy :as rfe]
    [swg-website.db :as db]
    [swg-website.queries :as q]
    [day8.re-frame.tracing :refer-macros [fn-traced]]))
+
+(comment
+  (* 2 
+     (+ 2 2))
+ ,)
 
 ;; Effect Registrations
 ;; 
@@ -36,6 +42,14 @@
  (fn [db [_]]
    (assoc db :search-term nil)))
 
+(re-frame/reg-cofx
+ ::current-url
+ (fn [cofx]
+   (let [loc (.-location js/document)]
+     (assoc cofx ::current-url {:path  (.-pathname loc)
+                                :query (.-search loc)
+                                :hash  (.-hash loc)}))))
+
 (re-frame/reg-event-db
  ::toggle-burger-menu
  (fn [db [_]]
@@ -52,6 +66,15 @@
        (assoc db :search-bar-focus false)
        (assoc db :search-bar-focus true)))))
 
+;; initializes the router and points the app at the proper route
+(re-frame/reg-event-fx
+ ::init-router
+ [(re-frame/inject-cofx  ::current-url)]
+ (fn-traced [cofx [_ router]]
+   (let [path (:path (::current-url cofx))]
+     {:db (assoc (:db cofx)
+                 :active-route (r/match-by-path router path))})))
+
 ;; The event used to navigate to a another route
 (re-frame/reg-event-fx
  ::push-state
@@ -61,7 +84,7 @@
 ;; TODO: Figure out what's happening here
 (re-frame/reg-event-db
  ::navigated
- (fn
+ (fn-traced
   [db [_ new-match]]
   (let [old-match (:active-route db)
         controllers (rfc/apply-controllers (:controllers old-match) new-match)]
@@ -110,8 +133,7 @@
   [{db :db} [_ term response]]
   {:db   (-> db
              (q/set-loading-state false)
-             (q/set-search-results response))
-   :dispatch [::push-state :routes/search {:term term}]}))
+             (q/set-search-results response))}))
 
 (re-frame/reg-event-fx
  ::neighbors-response

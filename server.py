@@ -11,12 +11,20 @@ load_dotenv()
 
 PG_PASSWORD = os.getenv("POSTGRES_PASSWORD")
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres:password@localhost:5432/postgres'.replace("password", PG_PASSWORD)
+# https://flask.palletsprojects.com/en/1.1.x/patterns/singlepageapplications/
+app = Flask(__name__, static_folder="frontend/resources/public", static_url_path="/")
+@app.route("/heartbeat")
+def heartbeat():
+    return {"status": "healthy"}
 
-# Surpressing Track Modifications warning
-# Either config can be more robust or
-# this is fine
+
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def catch_all(path):
+    return app.send_static_file("index.html")
+
+# app config
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres:password@localhost:5432/postgres'.replace("password", PG_PASSWORD)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
