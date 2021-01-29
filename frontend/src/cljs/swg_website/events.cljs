@@ -6,6 +6,7 @@
    [reitit.core :as r]
    [reitit.frontend.controllers :as rfc]
    [reitit.frontend.easy :as rfe]
+   [swg-website.config :refer [debug?]]
    [swg-website.db :as db]
    [swg-website.queries :as q]))
 
@@ -101,23 +102,25 @@
  ::get-neighbors
  (fn   
   [{db :db} [_ writer-map]]     ;; <-- 1st argument is coeffect, from which we extract db
-  {:http-xhrio {:method          :get
-                :uri             (str "/neighbors/" (:wid writer-map))
-                :format          (ajax/json-request-format)
-                :response-format (ajax/json-response-format {:keywords? true})
-                :on-success      [::neighbors-response (:wid writer-map)]
-                :on-failure      [::bad-response]}
-   :db  (-> db 
-            (assoc :loading? true)
-            (assoc :current-writer writer-map))}))
+  (let [uri (if (= debug? true) "http://localhost:5000/neighbors/" "/neighbors/")]
+   {:http-xhrio {:method          :get
+                 :uri             (str uri (:wid writer-map))
+                 :format          (ajax/json-request-format)
+                 :response-format (ajax/json-response-format {:keywords? true})
+                 :on-success      [::neighbors-response (:wid writer-map)]
+                 :on-failure      [::bad-response]}
+    :db  (-> db
+             (assoc :loading? true)
+             (assoc :current-writer writer-map))})))
 
 (re-frame/reg-event-fx
  ::get-writers
  (fn
    [{db :db} _]
-   (let [term (get-in db [:search-term])]
+   (let [term (get-in db [:search-term])
+         uri (if (= debug? true) "http://localhost:5000/writers/name_search/" "/writers/name_search/")]
      {:http-xhrio {:method          :get
-                   :uri             (str "/writers/name_search/" term)
+                   :uri             (str uri term)
                    :format          (ajax/json-request-format)
                    :response-format (ajax/json-response-format {:keywords? true})
                    ; We pass on the search term to the router,
