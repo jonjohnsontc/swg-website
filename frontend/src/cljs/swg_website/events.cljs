@@ -7,8 +7,7 @@
    [reitit.frontend.controllers :as rfc]
    [reitit.frontend.easy :as rfe]
    [swg-website.db :as db]
-   [swg-website.queries :as q]
-   [day8.re-frame.tracing :refer-macros [fn-traced]]))
+   [swg-website.queries :as q]))
 
 (comment
   (* 2 
@@ -70,7 +69,7 @@
 (re-frame/reg-event-fx
  ::init-router
  [(re-frame/inject-cofx  ::current-url)]
- (fn-traced [cofx [_ router]]
+ (fn [cofx [_ router]]
    (let [path (:path (::current-url cofx))]
      {:db (assoc (:db cofx)
                  :active-route (r/match-by-path router path))})))
@@ -84,7 +83,7 @@
 ;; TODO: Figure out what's happening here
 (re-frame/reg-event-db
  ::navigated
- (fn-traced
+ (fn
   [db [_ new-match]]
   (let [old-match (:active-route db)
         controllers (rfc/apply-controllers (:controllers old-match) new-match)]

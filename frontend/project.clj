@@ -9,7 +9,6 @@
                  [com.7theta/re-frame-fx "0.2.1"]
                  [re-frame "1.1.1"]
                  [day8.re-frame/http-fx "0.2.1"] ; For requests
-                 [re-com "2.9.0"]
                  [metosin/reitit "0.5.5"]
                  [org.clojars.nathell/tagsoup "1.2.1"]]
 
@@ -35,8 +34,7 @@
                                                           day8.re-frame-10x.preload]}}
                                :devtools {:http-root "resources/public"
                                           :http-port 8280
-                                          ;; :proxy-url "http://localhost:5000"
-                                          }
+                                          :proxy-url "http://localhost:5000"}
                                :closure-defines {"re_frame.trace.trace_enabled_QMARK_" true
                                                  "day8.re_frame.tracing.trace_enabled_QMARK_" true}}}}
 

@@ -12,11 +12,10 @@ load_dotenv()
 PG_PASSWORD = os.getenv("POSTGRES_PASSWORD")
 
 # https://flask.palletsprojects.com/en/1.1.x/patterns/singlepageapplications/
-app = Flask(__name__, static_folder="frontend/resources/public", static_url_path="/")
+app = Flask(__name__, static_folder="frontend/resources/public", static_url_path="/app")
 @app.route("/heartbeat")
 def heartbeat():
     return {"status": "healthy"}
-
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
