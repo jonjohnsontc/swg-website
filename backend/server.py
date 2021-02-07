@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask
+from flask import Flask, send_from_directory
 from flask_cors import CORS
 from flask_marshmallow import Marshmallow
 from flask_restful import Api, Resource, fields
@@ -12,15 +12,7 @@ load_dotenv()
 PG_PASSWORD = os.getenv("POSTGRES_PASSWORD")
 
 # https://flask.palletsprojects.com/en/1.1.x/patterns/singlepageapplications/
-app = Flask(__name__, static_folder="frontend/resources/public", static_url_path="/app")
-@app.route("/heartbeat")
-def heartbeat():
-    return {"status": "healthy"}
-
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
-def catch_all(path):
-    return app.send_static_file("index.html")
+app = Flask(__name__, static_folder="frontend/resources/public", static_url_path="/")
 
 # app config
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres:password@localhost:5432/postgres'.replace("password", PG_PASSWORD)
@@ -30,6 +22,18 @@ db = SQLAlchemy(app)
 api = Api(app)
 ma = Marshmallow(app)
 CORS(app)
+
+@app.route("/heartbeat")
+def heartbeat():
+    return {"status": "healthy"}
+
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def catch_all(path):
+    if path != "" and os.path.exists(f"{app.static_folder}/{path}"):
+       send_from_directory(app.static_folder, path)
+    else:
+        return app.send_static_file("index.html")
 
 class Neighbors(db.Model):
     wid = db.Column(db.Integer, primary_key=True)
