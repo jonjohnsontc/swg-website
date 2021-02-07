@@ -11,7 +11,7 @@ load_dotenv()
 
 PG_PASSWORD = os.getenv("POSTGRES_PASSWORD")
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="frontend/resources/public", static_url_path="/")
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres:password@localhost:5432/postgres'.replace("password", PG_PASSWORD)
 
 # Surpressing Track Modifications warning
@@ -146,6 +146,16 @@ class RetrieveWriterByWID(Resource):
 api.add_resource(RetreiveNeighbors, "/neighbors/<int:wid>")
 api.add_resource(RetrieveWritersByName, "/writers/name_search/<string:writers_name>")
 api.add_resource(RetrieveWriterByWID, "/writers/wid/<int:wid>")
+
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve(path):
+    if path != "" and os.path.exists(app.static_folder + '/' + path):
+        print(app.static_folder, path)
+        return send_from_directory(app.static_folder, path)
+    else:
+        print(app.static_folder, 'index.html')
+        return send_from_directory(app.static_folder, 'index.html')
 
 if __name__ == "__main__":
    app.run(debug=True)
