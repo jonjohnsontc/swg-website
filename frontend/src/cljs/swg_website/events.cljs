@@ -10,11 +10,6 @@
    [swg-website.db :as db]
    [swg-website.queries :as q]))
 
-(comment
-  (* 2 
-     (+ 2 2))
- ,)
-
 ;; Effect Registrations
 ;; 
 

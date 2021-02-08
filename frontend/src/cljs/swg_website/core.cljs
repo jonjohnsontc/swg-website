@@ -10,10 +10,6 @@
    [swg-website.views :as views]
    [swg-website.config :as config]))
 
-(comment
-  ()
-  (c/debug?))
-
 (defn href
   "Return relative url for given route. Url can be used in HTML links."
   ([k]
