@@ -37,7 +37,7 @@
      :view      views/results-panel
      :link-text "Search"
      :controllers
-     [{:start (fn [& params] (js/console.log "Entering search"))
+     [{:start (fn [] (re-frame/dispatch [::events/get-writers :term]))
        :stop  (fn [& params] (js/console.log "Leaving search"))}]}]
    ["writer/:wid"
     {:name      :routes/writer
@@ -57,7 +57,7 @@
    {:data {:coercion rss/coercion}}))
 
 (defn init-routes! []
-  (js/console.log "initializing routes")
+  (re-frame/dispatch [::events/init-router router])
   (rfe/start!
    router
    on-navigate

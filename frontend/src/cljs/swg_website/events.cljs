@@ -3,11 +3,12 @@
    [ajax.core :as ajax]
    [re-frame.core :as re-frame]
    [day8.re-frame.http-fx]
+   [reitit.core :as r]
    [reitit.frontend.controllers :as rfc]
    [reitit.frontend.easy :as rfe]
+   [swg-website.config :refer [debug?]]
    [swg-website.db :as db]
-   [swg-website.queries :as q]
-   [day8.re-frame.tracing :refer-macros [fn-traced]]))
+   [swg-website.queries :as q]))
 
 ;; Effect Registrations
 ;; 
@@ -36,6 +37,14 @@
  (fn [db [_]]
    (assoc db :search-term nil)))
 
+(re-frame/reg-cofx
+ ::current-url
+ (fn [cofx]
+   (let [loc (.-location js/document)]
+     (assoc cofx ::current-url {:path  (.-pathname loc)
+                                :query (.-search loc)
+                                :hash  (.-hash loc)}))))
+
 (re-frame/reg-event-db
  ::toggle-burger-menu
  (fn [db [_]]
@@ -51,6 +60,15 @@
      (if (= true focus)
        (assoc db :search-bar-focus false)
        (assoc db :search-bar-focus true)))))
+
+;; initializes the router and points the app at the proper route
+(re-frame/reg-event-fx
+ ::init-router
+ [(re-frame/inject-cofx  ::current-url)]
+ (fn [cofx [_ router]]
+   (let [path (:path (::current-url cofx))]
+     {:db (assoc (:db cofx)
+                 :active-route (r/match-by-path router path))})))
 
 ;; The event used to navigate to a another route
 (re-frame/reg-event-fx
@@ -79,23 +97,25 @@
  ::get-neighbors
  (fn   
   [{db :db} [_ writer-map]]     ;; <-- 1st argument is coeffect, from which we extract db
-  {:http-xhrio {:method          :get
-                :uri             (str "/neighbors/" (:wid writer-map))
-                :format          (ajax/json-request-format)
-                :response-format (ajax/json-response-format {:keywords? true})
-                :on-success      [::neighbors-response (:wid writer-map)]
-                :on-failure      [::bad-response]}
-   :db  (-> db 
-            (assoc :loading? true)
-            (assoc :current-writer writer-map))}))
+  (let [uri (if (= debug? true) "http://localhost:5000/neighbors/" "/neighbors/")]
+   {:http-xhrio {:method          :get
+                 :uri             (str uri (:wid writer-map))
+                 :format          (ajax/json-request-format)
+                 :response-format (ajax/json-response-format {:keywords? true})
+                 :on-success      [::neighbors-response (:wid writer-map)]
+                 :on-failure      [::bad-response]}
+    :db  (-> db
+             (assoc :loading? true)
+             (assoc :current-writer writer-map))})))
 
 (re-frame/reg-event-fx
  ::get-writers
  (fn
    [{db :db} _]
-   (let [term (get-in db [:search-term])]
+   (let [term (get-in db [:search-term])
+         uri (if (= debug? true) "http://localhost:5000/writers/name_search/" "/writers/name_search/")]
      {:http-xhrio {:method          :get
-                   :uri             (str "/writers/name_search/" term)
+                   :uri             (str uri term)
                    :format          (ajax/json-request-format)
                    :response-format (ajax/json-response-format {:keywords? true})
                    ; We pass on the search term to the router,
@@ -110,8 +130,7 @@
   [{db :db} [_ term response]]
   {:db   (-> db
              (q/set-loading-state false)
-             (q/set-search-results response))
-   :dispatch [::push-state :routes/search {:term term}]}))
+             (q/set-search-results response))}))
 
 (re-frame/reg-event-fx
  ::neighbors-response

@@ -42,8 +42,10 @@
 (defn go-button
   "Typically displayed next to the search bar. Initiates search for writer"
   []
-  [:button.button.is-primary.is-inline-flex.column.is-2.is-rounded
-   {:on-click #(re-frame/dispatch [::events/get-writers])} "Go"])
+  (let [term @(re-frame/subscribe [::subs/search-term])]
+   [:button.button.is-primary.is-inline-flex.column.is-2.is-rounded
+   {:on-click #(re-frame/dispatch [::events/push-state :routes/search {:term term}])} 
+    "Go"]))
 
 ;; TODO: Link should show router url e.g., /neighbors/1234
 ;;                             (cljs e.g., (str "/neighbors/" (:wid writer-map)))

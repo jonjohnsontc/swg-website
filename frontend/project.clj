@@ -9,7 +9,6 @@
                  [com.7theta/re-frame-fx "0.2.1"]
                  [re-frame "1.1.1"]
                  [day8.re-frame/http-fx "0.2.1"] ; For requests
-                 [re-com "2.9.0"]
                  [metosin/reitit "0.5.5"]
                  [org.clojars.nathell/tagsoup "1.2.1"]]
 
