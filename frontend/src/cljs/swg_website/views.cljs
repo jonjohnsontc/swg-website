@@ -42,8 +42,10 @@
 (defn go-button
   "Typically displayed next to the search bar. Initiates search for writer"
   []
-  [:button.button.is-primary.is-inline-flex.column.is-2.is-rounded
-   {:on-click #(re-frame/dispatch [::events/get-writers])} "Go"])
+  (let [term @(re-frame/subscribe [::subs/search-term])]
+   [:button.button.is-primary.is-inline-flex.column.is-2.is-rounded
+   {:on-click #(re-frame/dispatch [::events/push-state :routes/search {:term term}])} 
+    "Go"]))
 
 ;; TODO: Link should show router url e.g., /neighbors/1234
 ;;                             (cljs e.g., (str "/neighbors/" (:wid writer-map)))
@@ -54,6 +56,40 @@
    [:a {:href ""
         :on-click #(re-frame/dispatch [::events/get-neighbors writer-map])}
     (trim (:writer_name writer-map))]])
+
+(comment
+  (def values [1 2 3 4 5 6 7 8 9 10])
+  (for [x (range (/ (count values) 2))]
+    [((comp #(nth %) #(nth %) ) values x)]
+    )
+  ())
+
+(comment
+ (defn results-pagination
+   "Navigation for search results when there are greater than 10"
+  []
+  (let [length (count @(re-frame/subscribe [::subs/]))])))
+
+(defn results-listing-10 
+  ""
+  [results]
+  [:div.info-content.column.is-7
+   [:div.subtitle.is-2 "Search Results"]
+   [:div.content   ;; 'content' class to show bullet points
+    (into [:ul] (map writer-result results))]])
+
+;; partition is also a function
+(defn full-results 
+  "Shows search results on page. "
+  []
+  (let [results (:values @(re-frame/subscribe [::subs/current-search]))
+        size (count results)
+        partitions (int (+ (/ size 10) 1))
+        page-no @(re-frame/subscribe [::subs/results-page-number])
+        results-idx (apply * (range 10) page-no)]
+    [:<> 
+     [results-listing-10 (take 10 (nthrest results (* size page-no)))]
+     [:div]]))
 
 ;; https://stackoverflow.com/questions/37164091/how-do-i-loop-through-a-subscribed-collection-in-re-frame-and-display-the-data-a/37186230#37186230
 (defn results-listing []

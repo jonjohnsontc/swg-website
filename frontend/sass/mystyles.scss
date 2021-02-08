@@ -1,0 +1,143 @@
+@charset "utf-8";
+
+// Colors 
+// TODO: Should have multiple shades of each (3?)
+$purple: #BB6BD9;
+$orange: #F2994A;
+$green-1: #6FCF97;
+$off-white-1: #f6f4f4;
+
+
+// Bulma Global Vars
+$primary: $purple;
+$input-background-color: transparent;
+$navbar-tab-hover-border-bottom-color: $primary; // can't really tell
+$navbar-tab-active-border-bottom-color: $primary; // can't really tell
+$navbar-breakpoint: 760px;
+
+// HTML Elements
+input[type="text"] {
+    background: transparent;
+    border: none;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    border-radius: 0;
+   
+  &:focus {
+    -webkit-box-shadow: none;
+    box-shadow: none;
+  }
+}
+
+
+// Website Parts
+.app {
+    background-color: $off-white-1;
+    width: 100vw;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+.home-content {
+    margin-top: 20%;
+}
+
+.info-content {
+    margin-top: 100px;
+}
+
+.header {
+    border-bottom-width: 2px; 
+    border-bottom-color: $primary;
+    border-bottom-style: solid;
+    height: 80px;
+}
+
+.search-bar {
+  background-color: transparent;
+  border: 1.5px solid #4a4a4a;
+  border-radius: 290486px;
+  max-width: 400px;
+
+  // &:focus { box-shadow: 1px -5px 800px white; }
+}
+
+.writer-result {
+    padding-top: 35px;
+    font-size: 2em;
+
+    &:nth-child(3n) { color: $purple; }
+    &:nth-child(3n+1) { color: $orange; }
+    &:nth-child(3n+2) { color: $green-1; }
+}
+
+// Shapes + Animations
+// TODO: Would love to make this a "node in a graph" looking, rather than just a circle
+.display-circle {
+    background-color: $orange;
+    border-radius: 50%;
+    height: 200px;
+    width: 200px;
+}
+
+// Loading Elipsis
+// https://loading.io/css/
+ .lds-ellipsis {
+    display: inline-block;
+    position: relative;
+    width: 80px;
+    height: 80px;
+  }
+  .lds-ellipsis div {
+    position: absolute;
+    top: 33px;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: var(--green-1);
+    animation-timing-function: cubic-bezier(0, 1, 1, 0);
+  }
+  .lds-ellipsis div:nth-child(1) {
+    left: 8px;
+    animation: lds-ellipsis1 0.6s infinite;
+  }
+  .lds-ellipsis div:nth-child(2) {
+    left: 8px;
+    animation: lds-ellipsis2 0.6s infinite;
+  }
+  .lds-ellipsis div:nth-child(3) {
+    left: 32px;
+    animation: lds-ellipsis2 0.6s infinite;
+  }
+  .lds-ellipsis div:nth-child(4) {
+    left: 56px;
+    animation: lds-ellipsis3 0.6s infinite;
+  }
+  @keyframes lds-ellipsis1 {
+    0% {
+      transform: scale(0);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  @keyframes lds-ellipsis3 {
+    0% {
+      transform: scale(1);
+    }
+    100% {
+      transform: scale(0);
+    }
+  }
+  @keyframes lds-ellipsis2 {
+    0% {
+      transform: translate(0, 0);
+    }
+    100% {
+      transform: translate(24px, 0);
+    }
+  }
+
+
+// Bulma import at the end
+@import "../../../bulma/bulma.sass";

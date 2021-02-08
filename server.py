@@ -1,6 +1,7 @@
 import os
+import logging
 
-from flask import Flask
+from flask import Flask, send_from_directory
 from flask_cors import CORS
 from flask_marshmallow import Marshmallow
 from flask_restful import Api, Resource, fields
@@ -11,13 +12,13 @@ load_dotenv()
 
 PG_PASSWORD = os.getenv("POSTGRES_PASSWORD")
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres:password@localhost:5432/postgres'.replace("password", PG_PASSWORD)
+app = Flask(__name__, static_folder="frontend/resources/public")
 
 # Surpressing Track Modifications warning
 # Either config can be more robust or
 # this is fine
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres:password@localhost:5432/postgres'.replace("password", PG_PASSWORD)
 
 db = SQLAlchemy(app)
 api = Api(app)
@@ -71,7 +72,8 @@ class Writers(db.Model):
 
 class NeighborsSchema(ma.SQLAlchemySchema):
     class Meta:
-        fields = ("wid", "top_match_1", "top_match_2", "top_match_3", "top_match_4", "top_match_5")
+        fields = ("wid", "top_match_1", "top_match_2", 
+        "top_match_3", "top_match_4", "top_match_5")
         model = Neighbors
 
 
@@ -146,6 +148,16 @@ class RetrieveWriterByWID(Resource):
 api.add_resource(RetreiveNeighbors, "/neighbors/<int:wid>")
 api.add_resource(RetrieveWritersByName, "/writers/name_search/<string:writers_name>")
 api.add_resource(RetrieveWriterByWID, "/writers/wid/<int:wid>")
+
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve(path):
+    if path != "" and os.path.exists(app.static_folder + '/' + path):
+        logging.info(app.static_folder, path)
+        return send_from_directory(app.static_folder, path)
+    else:
+        logging.info(app.static_folder, 'index.html')
+        return send_from_directory(app.static_folder, 'index.html')
 
 if __name__ == "__main__":
    app.run(debug=True)
