@@ -19,6 +19,18 @@
   ([k params query]
    (rfe/href k params query)))
 
+;; (defn parse [url]
+;;   (let [[_] (url-split url)]
+;;     (into {}
+;;           (remove (comp (val nil?))
+;;                   {:put "something"
+;;                    :in  "here"}))))
+(comment
+  (require '[reitit.core :as r])
+  (r/routes router)
+  (rf/match-by-path router "/?search=hello")
+  )
+
 ;; If I don't namespace the route names, it will assume it's within
 ;; the namespace of whatever code is being executed :shrug: - not sure why
 (def routes
@@ -32,12 +44,14 @@
        :start (fn [& params] (js/console.log "Entering home page"))
        ;; Teardown can be done here.
        :stop  (fn [& params] (js/console.log "Leaving home page"))}]}]
-   ["search/q=:term"
+   ["?search={term}"
     {:name      :routes/search
      :view      views/results-panel
+     :parameters {:query {:search {:term string?}}}
      :link-text "Search"
      :controllers
-     [{:start (fn [] (re-frame/dispatch [::events/get-writers :term]))
+     [{:parameters {:query {:search :term}}
+       :start (fn [] (re-frame/dispatch [::events/get-writers :term]))
        :stop  (fn [& params] (js/console.log "Leaving search"))}]}]
    ["writer/:wid"
     {:name      :routes/writer
@@ -66,8 +80,8 @@
 
 (defn nav []
   (let [active-route @(re-frame/subscribe [::subs/active-route])]
-     (when active-route
-       [(-> active-route :data :view)])))
+    (when active-route
+      [(-> active-route :data :view)])))
 
 (defn dev-setup []
   (when config/debug?

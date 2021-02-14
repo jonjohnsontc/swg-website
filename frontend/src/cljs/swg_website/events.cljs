@@ -66,7 +66,9 @@
  ::init-router
  [(re-frame/inject-cofx  ::current-url)]
  (fn [cofx [_ router]]
-   (let [path (:path (::current-url cofx))]
+   (let [path (:path (::current-url cofx))
+        ;;  query (:query (::current-url cofx))
+         ]
      {:db (assoc (:db cofx)
                  :active-route (r/match-by-path router path))})))
 
@@ -85,6 +87,7 @@
         controllers (rfc/apply-controllers (:controllers old-match) new-match)]
     (assoc db :active-route (assoc new-match :controllers controllers)))))
 
+;; TODO: clear writer and neighbor listings as well
 (re-frame/reg-event-fx
  ::clear-search-and-go-home
  (fn [{db :db} [_]]
@@ -111,8 +114,9 @@
 (re-frame/reg-event-fx
  ::get-writers
  (fn
-   [{db :db} _]
-   (let [term (get-in db [:search-term])
+   [{db :db} [_ term]]
+  ;;  TODOJON: this probably isn't the right way to handle search terms
+   (let [term (or {:term term} (get-in db [:search-term]))
          uri (if (= debug? true) "http://localhost:5000/writers/name_search/" "/writers/name_search/")]
      {:http-xhrio {:method          :get
                    :uri             (str uri term)
@@ -120,7 +124,7 @@
                    :response-format (ajax/json-response-format {:keywords? true})
                    ; We pass on the search term to the router,
                    ; which hasn't yet loaded the page
-                   :on-success      [::writers-response term] 
+                   :on-success      [::writers-response term]
                    :on-failure      [::bad-response]}
       :db  (assoc db :loading? true)})))
 
