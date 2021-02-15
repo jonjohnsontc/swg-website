@@ -38,9 +38,16 @@
    (assoc db :search-term nil)))
 
 (re-frame/reg-event-db
- ::change-page-no
- (fn [db [_ number]]
-   (assoc db :results-page-number number)))
+ ::prev-page
+ (fn [db [_]]
+   (let [pg-number (get-in db [:cs :results-page-number])]
+     (assoc-in db [:cs :results-page-number] (dec pg-number)))))
+
+(re-frame/reg-event-db
+ ::next-page
+ (fn [db [_]]
+   (let [pg-number (get-in db [:cs :results-page-number])]
+     (assoc-in db [:cs :results-page-number] (inc pg-number)))))
 
 (re-frame/reg-cofx
  ::current-url
@@ -66,18 +73,18 @@
        (assoc db :search-bar-focus false)
        (assoc db :search-bar-focus true)))))
 
-;; initializes the router and points the app at the proper route
 (re-frame/reg-event-fx
- ::init-router
+ ::init-router 
+ ^{:doc "Initializes the router and points the app at the proper route"}
  [(re-frame/inject-cofx  ::current-url)]
  (fn [cofx [_ router]]
    (let [path (:path (::current-url cofx))]
      {:db (assoc (:db cofx)
                  :active-route (r/match-by-path router path))})))
 
-;; The event used to navigate to a another route
 (re-frame/reg-event-fx
  ::push-state
+ ^{:doc "The event used to navigate to a another route"}
  (fn [db [_ & route]]
    {:push-state route}))
 
@@ -94,7 +101,7 @@
  ::clear-search-and-go-home
  (fn [{db :db} [_]]
    {:db (assoc db :search-term nil)
-   :dispatch [::push-state :routes/home]}))
+    :dispatch [::push-state :routes/home]}))
 
 ;; HTTP Request Related Events 
 ;; 
@@ -115,27 +122,31 @@
 
 (re-frame/reg-event-fx
  ::get-writers
- (fn
-   [{db :db} _]
+ (fn [{db :db} _]
    (let [term (get-in db [:search-term])
          uri (if (= debug? true) "http://localhost:5000/writers/name_search/" "/writers/name_search/")]
      {:http-xhrio {:method          :get
                    :uri             (str uri term)
                    :format          (ajax/json-request-format)
                    :response-format (ajax/json-response-format {:keywords? true})
-                   ; We pass on the search term to the router,
-                   ; which hasn't yet loaded the page
-                   :on-success      [::writers-response term] 
+                   :on-success      [::writers-response] 
                    :on-failure      [::bad-response]}
       :db  (assoc db :loading? true)})))
 
 (re-frame/reg-event-fx
  ::writers-response
- (fn
-  [{db :db} [_ term response]]
-  {:db   (-> db
-             (q/set-loading-state false)
-             (q/set-search-results response))}))
+  ^{:doc "Takes writer search results as response, and tosses it in the app-db. 
+    It also associates a number of stats about the results to the app-db 
+    to compute pagination"}
+ (fn [{db :db} [_ response]]
+  (let [res-count (count (js->clj response))
+        pg-count (int (+ (/ res-count 10) 1))] 
+   {:db   (-> db
+              (assoc-in [:cs :results-page-number] 1)
+              (assoc-in [:cs :results-count] res-count)
+              (assoc-in [:cs :results-pages] pg-count)
+              (q/set-loading-state false)
+              (q/set-search-results response))})))
 
 (re-frame/reg-event-fx
  ::neighbors-response

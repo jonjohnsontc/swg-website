@@ -64,21 +64,38 @@
     )
   ())
 
-(comment
  (defn results-pagination
-   "Navigation for search results when there are greater than 10"
-  []
-  (let [length (count @(re-frame/subscribe [::subs/]))])))
+   "Navigation for search results when there are greater than 10.
+    If results are less than 10 - it's just an empty div"
+   []
+   (let [length @(re-frame/subscribe [::subs/results-count])
+         cur-pg @(re-frame/subscribe [::subs/results-page-number])
+         res-pg @(re-frame/subscribe [::subs/results-pages])
+         beginning? (if (= 1 cur-pg) true false)
+         end? (if (= res-pg cur-pg) true false)]
+     (if (> length 10)
+       [:nav.pagination.is-rounded {:role "navigation" :aria-label "navigation"}
+        [:a.pagination-previous
+         {:on-click (when (not= beginning? true) #(re-frame/dispatch [::events/prev-page]))
+          :disabled (when (= beginning? true) ":disabled")}
+         "Previous"]
+        [:a.pagination-next
+         {:on-click (when (not= end? true) #(re-frame/dispatch [::events/next-page]))
+          :disabled (when (= end? true) ":disabled")}
+         "Next"]]
+       [:div])))
 
 (defn results-listing-10 
-  ""
+  "The div that contains the search results listing"
   [results]
-  [:div.info-content.column.is-7
-   [:div.subtitle.is-2 "Search Results"]
-   [:div.content   ;; 'content' class to show bullet points
-    (into [:ul] (map writer-result results))]])
+  (let [length (count (:values @(re-frame/subscribe [::subs/current-search])))]
+   [:div.info-content.column.is-7
+    [:div.subtitle.is-2 (str length " Search Results")]
+    [:div.content   ;; 'content' class to show bullet points
+     (into [:ul] (map writer-result results))]]))
 
-;; partition is also a function
+(comment
+ ;; partition is also a function
 (defn full-results 
   "Shows search results on page. "
   []
@@ -89,15 +106,17 @@
         results-idx (apply * (range 10) page-no)]
     [:<> 
      [results-listing-10 (take 10 (nthrest results (* size page-no)))]
-     [:div]]))
+     [results-pagination]])))
 
 ;; https://stackoverflow.com/questions/37164091/how-do-i-loop-through-a-subscribed-collection-in-re-frame-and-display-the-data-a/37186230#37186230
-(defn results-listing []
+(defn results-listing 
+  []
   (let [results (:values @(re-frame/subscribe [::subs/current-search]))]
     [:div.info-content.column.is-7
      [:div.subtitle.is-2 "Search Results"]
      [:div.content   ;; 'content' class to show bullet points
-      (into [:ul] (map writer-result results))]]))
+      (into [:ul] (map writer-result results))]
+     [results-pagination]])) ;; TODOJON: prolly delete
 
 (defn neighbors-result-listing
   "List of nearest neighbors per writer"
