@@ -74,7 +74,7 @@
          beginning? (if (= 1 cur-pg) true false)
          end? (if (= res-pg cur-pg) true false)]
      (if (> length 10)
-       [:nav.pagination.is-rounded {:role "navigation" :aria-label "navigation"}
+       [:nav.pagination.is-rounded.mt-6 {:role "navigation" :aria-label "navigation"}
         [:a.pagination-previous
          {:on-click (when (not= beginning? true) #(re-frame/dispatch [::events/prev-page]))
           :disabled (when (= beginning? true) ":disabled")}
@@ -85,6 +85,7 @@
          "Next"]]
        [:div])))
 
+;; https://stackoverflow.com/questions/37164091/how-do-i-loop-through-a-subscribed-collection-in-re-frame-and-display-the-data-a/37186230#37186230
 (defn results-listing-10 
   "The div that contains the search results listing"
   [results]
@@ -92,31 +93,21 @@
    [:div.info-content.column.is-7
     [:div.subtitle.is-2 (str length " Search Results")]
     [:div.content   ;; 'content' class to show bullet points
-     (into [:ul] (map writer-result results))]]))
+     (into [:ul] (map writer-result results))]
+    [results-pagination]]))
 
 (comment
- ;; partition is also a function
+  (def struct [1 3 "hi" "boar" "more"])
+  (nthrest struct 0))
+
 (defn full-results 
-  "Shows search results on page. "
+  "Shows search results on page"
   []
   (let [results (:values @(re-frame/subscribe [::subs/current-search]))
-        size (count results)
-        partitions (int (+ (/ size 10) 1))
         page-no @(re-frame/subscribe [::subs/results-page-number])
-        results-idx (apply * (range 10) page-no)]
+        page (if (= 1 page-no) 0 page-no)]
     [:<> 
-     [results-listing-10 (take 10 (nthrest results (* size page-no)))]
-     [results-pagination]])))
-
-;; https://stackoverflow.com/questions/37164091/how-do-i-loop-through-a-subscribed-collection-in-re-frame-and-display-the-data-a/37186230#37186230
-(defn results-listing 
-  []
-  (let [results (:values @(re-frame/subscribe [::subs/current-search]))]
-    [:div.info-content.column.is-7
-     [:div.subtitle.is-2 "Search Results"]
-     [:div.content   ;; 'content' class to show bullet points
-      (into [:ul] (map writer-result results))]
-     [results-pagination]])) ;; TODOJON: prolly delete
+     [results-listing-10  (take 10 (nthrest results (* 10 page)))]]))
 
 (defn neighbors-result-listing
   "List of nearest neighbors per writer"
@@ -225,9 +216,9 @@
 (defn results-panel []
   [:div.app
    [header-w-search-bar]
-   [:div.columns 
+   [:div.columns
     [:div.column.is-1]
-    [results-listing]]
+    [full-results]]
    [footer]])
 
 (defn writer-panel []

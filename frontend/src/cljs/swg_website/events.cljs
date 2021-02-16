@@ -135,18 +135,18 @@
 
 (re-frame/reg-event-fx
  ::writers-response
-  ^{:doc "Takes writer search results as response, and tosses it in the app-db. 
+ ^{:doc "Takes writer search results as response, and tosses it in the app-db. 
     It also associates a number of stats about the results to the app-db 
     to compute pagination"}
  (fn [{db :db} [_ response]]
-  (let [res-count (count (js->clj response))
-        pg-count (int (+ (/ res-count 10) 1))] 
-   {:db   (-> db
-              (assoc-in [:cs :results-page-number] 1)
-              (assoc-in [:cs :results-count] res-count)
-              (assoc-in [:cs :results-pages] pg-count)
-              (q/set-loading-state false)
-              (q/set-search-results response))})))
+   (let [res-count (count (js->clj response))
+         pg-count (int (/ res-count 10))]
+     {:db   (-> db
+                (assoc-in [:cs :results-page-number] 1)
+                (assoc-in [:cs :results-count] res-count)
+                (assoc-in [:cs :results-pages] pg-count)
+                (q/set-loading-state false)
+                (q/set-search-results response))})))
 
 (re-frame/reg-event-fx
  ::neighbors-response
