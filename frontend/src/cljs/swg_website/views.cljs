@@ -79,7 +79,7 @@
        [:div])))
 
 ;; https://stackoverflow.com/questions/37164091/how-do-i-loop-through-a-subscribed-collection-in-re-frame-and-display-the-data-a/37186230#37186230
-(defn results-listing-10 
+(defn results-listing
   "The div that contains the search results listing"
   [results]
   (let [length (count (:values @(re-frame/subscribe [::subs/current-search])))]
@@ -96,7 +96,7 @@
         page-no @(re-frame/subscribe [::subs/results-page-number])
         page (if (= 1 page-no) 0 page-no)]
     [:<> 
-     [results-listing-10  (take 10 (nthrest results (* 10 page)))]]))
+     [results-listing  (take 10 (nthrest results (* 10 page)))]]))
 
 (defn neighbors-result-listing
   "List of nearest neighbors per writer"
