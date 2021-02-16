@@ -57,13 +57,6 @@
         :on-click #(re-frame/dispatch [::events/get-neighbors writer-map])}
     (trim (:writer_name writer-map))]])
 
-(comment
-  (def values [1 2 3 4 5 6 7 8 9 10])
-  (for [x (range (/ (count values) 2))]
-    [((comp #(nth %) #(nth %) ) values x)]
-    )
-  ())
-
  (defn results-pagination
    "Navigation for search results when there are greater than 10.
     If results are less than 10 - it's just an empty div"
@@ -95,10 +88,6 @@
     [:div.content   ;; 'content' class to show bullet points
      (into [:ul] (map writer-result results))]
     [results-pagination]]))
-
-(comment
-  (def struct [1 3 "hi" "boar" "more"])
-  (nthrest struct 0))
 
 (defn full-results 
   "Shows search results on page"
