@@ -1,4 +1,0 @@
-goog.provide('swg_website.db');
-swg_website.db.default_db = cljs.core.PersistentHashMap.fromArrays([new cljs.core.Keyword(null,"search-term","search-term",356193544),new cljs.core.Keyword(null,"search-bar-focus","search-bar-focus",2069261864),new cljs.core.Keyword(null,"name","name",1843675177),new cljs.core.Keyword(null,"loading?","loading?",1905707049),new cljs.core.Keyword(null,"writer-matches","writer-matches",1845018985),new cljs.core.Keyword(null,"cs","cs",-1757555990),new cljs.core.Keyword(null,"error-msg","error-msg",-1409360623),new cljs.core.Keyword(null,"current-writer","current-writer",-2032400582),new cljs.core.Keyword(null,"burger-menu","burger-menu",2097990522)],["",false,"Songwriter Graph",false,null,new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"values","values",372645556),null], null),null,null,false]);
-
-//# sourceMappingURL=swg_website.db.js.map
