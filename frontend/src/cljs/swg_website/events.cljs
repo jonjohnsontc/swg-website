@@ -1,6 +1,7 @@
 (ns  swg-website.events
   (:require
    [ajax.core :as ajax]
+   [cljs-http.client :as http]
    [re-frame.core :as re-frame]
    [day8.re-frame.http-fx]
    [reitit.core :as r]
@@ -8,8 +9,7 @@
    [reitit.frontend.easy :as rfe]
    [swg-website.config :refer [debug?]]
    [swg-website.db :as db]
-   [swg-website.queries :as q]
-   [cljs-http.client :as http]))
+   [swg-website.queries :as q]))
 
 ;; Effect Registrations
 ;; 

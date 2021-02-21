@@ -8,8 +8,7 @@
    [swg-website.events :as events]
    [swg-website.subs :as subs]
    [swg-website.views :as views]
-   [swg-website.config :as config]
-   [cljs-http.client :as http]))
+   [swg-website.config :as config]))
 
 (defn href
   "Return relative url for given route. Url can be used in HTML links."
@@ -19,20 +18,6 @@
    (href k params nil))
   ([k params query]
    (rfe/href k params query)))
-
-;; (defn parse [url]
-;;   (let [[_] (url-split url)]
-;;     (into {}
-;;           (remove (comp (val nil?))
-;;                   {:put "something"
-;;                    :in  "here"}))))
-(comment
-  (require '[reitit.core :as r])
-  (r/routes router)
-  (rf/match-by-path router "/search?term=hello")
-  (:query-params (http/parse-url "www.hello.com/search?term=hello&squid=hi"))
-  (.-pathname (.-location js/document))
-  (str (.-location js/document)))
 
 ;; If I don't namespace the route names, it will assume it's within
 ;; the namespace of whatever code is being executed :shrug: - not sure why
