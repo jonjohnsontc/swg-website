@@ -34,24 +34,6 @@
   (.-pathname (.-location js/document))
   (str (.-location js/document)))
 
-(comment
-  (def alt-routes
-    [["/"]
-     ["/search?term=:term"]
-     ["/?"]])
-
-  {:parameters {:path [:id]}}
-
-  (def alt-router
-    (rf/router
-     alt-routes
-     {:data {:coercion rss/coercion}}))
-
-  (rf/query-params (Uri. "search?term=mikkel+mcguilicuty"))
-  (require [goog.Uri])
-  (require [goog.Uri.QueryData :as qd])
-  (def typical-url (Uri. "http://localhost:8080/search?term=carter")))
-
 ;; If I don't namespace the route names, it will assume it's within
 ;; the namespace of whatever code is being executed :shrug: - not sure why
 (def routes
@@ -76,7 +58,7 @@
      :controllers
      [{:parameters {:path [:wid]}
        :start (fn [params] (re-frame/dispatch [::events/get-writer (-> params :path :wid)]))
-       :stop  (fn [& params] (js/console.log "Leaving writer page"))}]}]])
+       :stop  (fn [] (re-frame/dispatch [::events/clear-current-writer]))}]}]])
 
 (defn on-navigate [new-match]
   (when new-match

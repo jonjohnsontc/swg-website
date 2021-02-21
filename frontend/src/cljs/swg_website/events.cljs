@@ -38,6 +38,14 @@
  (fn [db [_]]
    (assoc db :cs nil)))
 
+(re-frame/reg-event-db
+ ::clear-current-writer
+ ^{:doc "Removes current writer and their matches from app-db"}
+ (fn [db [_]]
+   (-> db
+       (assoc :current-writer nil)
+       (assoc :writer-matches nil))))
+
 (re-frame/reg-cofx
  ::current-url
  (fn [cofx]
