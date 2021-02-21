@@ -58,13 +58,46 @@
         :on-click #(re-frame/dispatch [::events/push-state :routes/writer {:wid (:wid writer-map)}])}
     (trim (:writer_name writer-map))]])
 
+ (defn results-pagination
+   "Navigation for search results when there are greater than 10.
+    If results are less than 10 - it's just an empty div"
+   []
+   (let [length @(re-frame/subscribe [::subs/results-count])
+         cur-pg @(re-frame/subscribe [::subs/results-page-number])
+         res-pg @(re-frame/subscribe [::subs/results-pages])
+         beginning? (if (= 1 cur-pg) true false)
+         end? (if (= res-pg cur-pg) true false)]
+     (if (> length 10)
+       [:nav.pagination.is-rounded.mt-6 {:role "navigation" :aria-label "navigation"}
+        [:a.pagination-previous
+         {:on-click (when (not= beginning? true) #(re-frame/dispatch [::events/prev-page]))
+          :disabled (when (= beginning? true) ":disabled")}
+         "Previous"]
+        [:a.pagination-next
+         {:on-click (when (not= end? true) #(re-frame/dispatch [::events/next-page]))
+          :disabled (when (= end? true) ":disabled")}
+         "Next"]]
+       [:div])))
+
 ;; https://stackoverflow.com/questions/37164091/how-do-i-loop-through-a-subscribed-collection-in-re-frame-and-display-the-data-a/37186230#37186230
-(defn results-listing []
-  (let [results (:values @(re-frame/subscribe [::subs/current-search]))]
-    [:div.info-content.column.is-7
-     [:div.subtitle.is-2 "Search Results"]
-     [:div.content   ;; 'content' class to show bullet points
-      (into [:ul] (map writer-result results))]]))
+(defn results-listing
+  "The div that contains the search results listing"
+  [results]
+  (let [length (count (:values @(re-frame/subscribe [::subs/current-search])))]
+   [:div.info-content.column.is-7
+    [:div.subtitle.is-2 (str length " Search Results")]
+    [:div.content   ;; 'content' class to show bullet points
+     (into [:ul] (map writer-result results))]
+    [results-pagination]]))
+
+(defn full-results 
+  "Shows search results on page"
+  []
+  (let [results (:values @(re-frame/subscribe [::subs/current-search]))
+        page-no @(re-frame/subscribe [::subs/results-page-number])
+        page (if (= 1 page-no) 0 page-no)]
+    [:<> 
+     [results-listing  (take 10 (nthrest results (* 10 page)))]]))
 
 (defn neighbors-result-listing
   "List of nearest neighbors per writer"
@@ -173,9 +206,9 @@
 (defn results-panel []
   [:div.app
    [header-w-search-bar]
-   [:div.columns 
+   [:div.columns
     [:div.column.is-1]
-    [results-listing]]
+    [full-results]]
    [footer]])
 
 (defn writer-panel []

@@ -46,6 +46,18 @@
        (assoc :current-writer nil)
        (assoc :writer-matches nil))))
 
+(re-frame/reg-event-db
+ ::prev-page
+ (fn [db [_]]
+   (let [pg-number (get-in db [:cs :results-page-number])]
+     (assoc-in db [:cs :results-page-number] (dec pg-number)))))
+
+(re-frame/reg-event-db
+ ::next-page
+ (fn [db [_]]
+   (let [pg-number (get-in db [:cs :results-page-number])]
+     (assoc-in db [:cs :results-page-number] (inc pg-number)))))
+
 (re-frame/reg-cofx
  ::current-url
  (fn [cofx]
@@ -71,9 +83,9 @@
        (assoc db :search-bar-focus false)
        (assoc db :search-bar-focus true)))))
 
-;; initializes the router and points the app at the proper route
 (re-frame/reg-event-fx
- ::init-router
+ ::init-router 
+ ^{:doc "Initializes the router and points the app at the proper route"}
  [(re-frame/inject-cofx  ::current-url)]
  (fn [cofx [_ router]]
    (let [path (:path (::current-url cofx))]
@@ -97,6 +109,7 @@
 ;; The event used to navigate to a another route
 (re-frame/reg-event-fx
  ::push-state
+ ^{:doc "The event used to navigate to a another route"}
  (fn [db [_ & route]]
    {:push-state route}))
 
@@ -115,7 +128,7 @@
  ::clear-search-and-go-home
  (fn [{db :db} [_]]
    {:db (assoc db :search-term nil)
-   :dispatch [::push-state :routes/home]}))
+    :dispatch [::push-state :routes/home]}))
 
 ;; HTTP Request Related Events 
 ;; 

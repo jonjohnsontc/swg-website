@@ -46,3 +46,18 @@
  ::search-bar-focus
  (fn [db]
    (:search-bar-focus db)))
+
+(re-frame/reg-sub
+ ::results-page-number
+ (fn [db]
+   (get-in db [:cs :results-page-number])))
+
+(re-frame/reg-sub
+ ::results-count
+ (fn [db]
+   (get-in db [:cs :results-count])))
+
+(re-frame/reg-sub
+ ::results-pages
+ (fn [db]
+   (get-in db [:cs :results-pages])))
