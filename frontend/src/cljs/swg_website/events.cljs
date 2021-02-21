@@ -124,7 +124,22 @@
                  :on-failure      [::bad-response]}
     :db  (-> db
              (assoc :loading? true)
-             (assoc :current-writer writer-map))})))
+             (assoc :current-writer writer-map)
+             )})))
+
+(re-frame/reg-event-fx
+ ::get-writer
+ (fn
+   [{db :db} [_ wid]]     ;; <-- 1st argument is coeffect, from which we extract db
+   (let [uri (if (= debug? true) "http://localhost:5000/writers/wid/" "/writers/wid/")]
+     {:http-xhrio {:method          :get
+                   :uri             (str uri wid)
+                   :format          (ajax/json-request-format)
+                   :response-format (ajax/json-response-format {:keywords? true})
+                   :on-success      [::writer-response]
+                   :on-failure      [::bad-response]}
+      :db  (-> db
+               (assoc :loading? true))})))
 
 (re-frame/reg-event-fx
  ::get-writers
@@ -156,13 +171,21 @@
              (q/set-search-results response))}))
 
 (re-frame/reg-event-fx
+ ::writer-response
+ (fn
+   [{db :db} [_ response]]
+   {:db   (-> db
+              (q/set-loading-state false))
+    :dispatch [::get-neighbors response]}))
+
+
+(re-frame/reg-event-fx
  ::neighbors-response
  (fn
   [{db :db} [_ wid response]]
   {:db   (-> db
              (q/set-loading-state false)
-             (q/set-neighbors response))
-   :dispatch [::push-state :routes/writer {:wid wid}]}))
+             (q/set-neighbors response))}))
 
 (re-frame/reg-event-db
  ::bad-response

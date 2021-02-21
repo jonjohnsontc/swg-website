@@ -72,8 +72,10 @@
     {:name      :routes/writer
      :view      views/writer-panel
      :link-text "Writer"
+     :parameters {:path {:wid int?}}
      :controllers
-     [{:start (fn [& params] (js/console.log "Entering writer page"))
+     [{:parameters {:path [:wid]}
+       :start (fn [params] (re-frame/dispatch [::events/get-writer (-> params :path :wid)]))
        :stop  (fn [& params] (js/console.log "Leaving writer page"))}]}]])
 
 (defn on-navigate [new-match]

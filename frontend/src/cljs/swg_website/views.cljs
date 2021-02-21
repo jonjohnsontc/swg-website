@@ -55,7 +55,7 @@
   [writer-map]
   [:li.writer-result
    [:a {:href ""
-        :on-click #(re-frame/dispatch [::events/get-neighbors writer-map])}
+        :on-click #(re-frame/dispatch [::events/push-state :routes/writer {:wid (:wid writer-map)}])}
     (trim (:writer_name writer-map))]])
 
 ;; https://stackoverflow.com/questions/37164091/how-do-i-loop-through-a-subscribed-collection-in-re-frame-and-display-the-data-a/37186230#37186230
