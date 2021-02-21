@@ -10,7 +10,8 @@
                  [re-frame "1.1.1"]
                  [day8.re-frame/http-fx "0.2.1"] ; For requests
                  [metosin/reitit "0.5.5"]
-                 [org.clojars.nathell/tagsoup "1.2.1"]]
+                 [org.clojars.nathell/tagsoup "1.2.1"]
+                 [cljs-http "0.1.46"]]
 
   :plugins [[lein-shadow "0.3.1"]
             [lein-shell "0.5.0"]

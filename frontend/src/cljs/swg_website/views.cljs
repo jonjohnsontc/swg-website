@@ -3,7 +3,8 @@
    [clojure.string :refer [trim]]
    [re-frame.core :as re-frame]
    [swg-website.events :as events]
-   [swg-website.subs :as subs]))
+   [swg-website.subs :as subs]
+   [swg-website.utils :refer [make-search-term]]))
 
 (def gh-address
   "https://github.com/jonjohnsontc/songwriter-graph")
@@ -44,7 +45,7 @@
   []
   (let [term @(re-frame/subscribe [::subs/search-term])]
    [:button.button.is-primary.is-inline-flex.column.is-2.is-rounded
-   {:on-click #(re-frame/dispatch [::events/push-state :routes/search {:term term}])} 
+   {:on-click #(re-frame/dispatch [::events/push-state :routes/search {:term (make-search-term term)}])} 
     "Go"]))
 
 ;; TODO: Link should show router url e.g., /neighbors/1234

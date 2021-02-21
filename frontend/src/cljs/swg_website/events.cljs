@@ -8,7 +8,8 @@
    [reitit.frontend.easy :as rfe]
    [swg-website.config :refer [debug?]]
    [swg-website.db :as db]
-   [swg-website.queries :as q]))
+   [swg-website.queries :as q]
+   [cljs-http.client :as http]))
 
 ;; Effect Registrations
 ;; 
@@ -35,13 +36,14 @@
 (re-frame/reg-event-db
  ::clear-search
  (fn [db [_]]
-   (assoc db :search-term nil)))
+   (assoc db :cs nil)))
 
 (re-frame/reg-cofx
  ::current-url
  (fn [cofx]
    (let [loc (.-location js/document)]
-     (assoc cofx ::current-url {:path  (.-pathname loc)
+     (assoc cofx ::current-url {:full  (str loc)
+                                :path  (.-pathname loc)
                                 :query (.-search loc)
                                 :hash  (.-hash loc)}))))
 
@@ -66,11 +68,23 @@
  ::init-router
  [(re-frame/inject-cofx  ::current-url)]
  (fn [cofx [_ router]]
-   (let [path (:path (::current-url cofx))
-        ;;  query (:query (::current-url cofx))
-         ]
+   (let [path (:path (::current-url cofx))]
      {:db (assoc (:db cofx)
                  :active-route (r/match-by-path router path))})))
+
+(re-frame/reg-event-fx
+ ::init-router-2
+ ^{:doc ""}
+ [(re-frame/inject-cofx  ::current-url)]
+ (fn [cofx [_ router]]
+   (let [path (:full (::current-url cofx))
+         query (:query-params (http/parse-url path))
+         params {:term (:q query)}]
+     (if query
+       {:db (assoc (:db cofx)
+                   :active-route (r/match-by-name router :routes/search params))}
+       {:db (assoc (:db cofx)
+                   :active-route (r/match-by-path router path))}))))
 
 ;; The event used to navigate to a another route
 (re-frame/reg-event-fx
@@ -88,6 +102,7 @@
     (assoc db :active-route (assoc new-match :controllers controllers)))))
 
 ;; TODO: clear writer and neighbor listings as well
+;; TODO: should this just re-initialize the default app-db?
 (re-frame/reg-event-fx
  ::clear-search-and-go-home
  (fn [{db :db} [_]]
@@ -113,25 +128,29 @@
 
 (re-frame/reg-event-fx
  ::get-writers
+ ^{:doc "Takes the term passed through, formats it, and sends it to the backend
+         to retrieve results."}
  (fn
    [{db :db} [_ term]]
-  ;;  TODOJON: this probably isn't the right way to handle search terms
-   (let [term (or {:term term} (get-in db [:search-term]))
-         uri (if (= debug? true) "http://localhost:5000/writers/name_search/" "/writers/name_search/")]
+   (let [split-term (clojure.string/replace term #"-" " ")
+         term-str   (apply str split-term)
+         uri        (if (= debug? true)
+                      "http://localhost:5000/writers/name_search/"
+                      "/writers/name_search/")]
      {:http-xhrio {:method          :get
-                   :uri             (str uri term)
+                   :uri             (str uri term-str)
                    :format          (ajax/json-request-format)
                    :response-format (ajax/json-response-format {:keywords? true})
-                   ; We pass on the search term to the router,
-                   ; which hasn't yet loaded the page
-                   :on-success      [::writers-response term]
+                   :on-success      [::writers-response]
                    :on-failure      [::bad-response]}
-      :db  (assoc db :loading? true)})))
+      :db  (-> db 
+               (assoc :loading? true)
+               (assoc :search-term term-str))})))
 
 (re-frame/reg-event-fx
  ::writers-response
  (fn
-  [{db :db} [_ term response]]
+  [{db :db} [_ response]]
   {:db   (-> db
              (q/set-loading-state false)
              (q/set-search-results response))}))

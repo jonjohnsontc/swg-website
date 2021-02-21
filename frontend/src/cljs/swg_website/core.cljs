@@ -8,7 +8,8 @@
    [swg-website.events :as events]
    [swg-website.subs :as subs]
    [swg-website.views :as views]
-   [swg-website.config :as config]))
+   [swg-website.config :as config]
+   [cljs-http.client :as http]))
 
 (defn href
   "Return relative url for given route. Url can be used in HTML links."
@@ -28,8 +29,28 @@
 (comment
   (require '[reitit.core :as r])
   (r/routes router)
-  (rf/match-by-path router "/?search=hello")
-  )
+  (rf/match-by-path router "/search?term=hello")
+  (:query-params (http/parse-url "www.hello.com/search?term=hello&squid=hi"))
+  (.-pathname (.-location js/document))
+  (str (.-location js/document)))
+
+(comment
+  (def alt-routes
+    [["/"]
+     ["/search?term=:term"]
+     ["/?"]])
+
+  {:parameters {:path [:id]}}
+
+  (def alt-router
+    (rf/router
+     alt-routes
+     {:data {:coercion rss/coercion}}))
+
+  (rf/query-params (Uri. "search?term=mikkel+mcguilicuty"))
+  (require [goog.Uri])
+  (require [goog.Uri.QueryData :as qd])
+  (def typical-url (Uri. "http://localhost:8080/search?term=carter")))
 
 ;; If I don't namespace the route names, it will assume it's within
 ;; the namespace of whatever code is being executed :shrug: - not sure why
@@ -37,22 +58,16 @@
   ["/"
    [""
     {:name      :routes/home
-     :view      views/home
-     :controllers
-     [{;; Do whatever initialization needed for home page
-       ;; I.e (re-frame/dispatch [::events/load-something-with-ajax])
-       :start (fn [& params] (js/console.log "Entering home page"))
-       ;; Teardown can be done here.
-       :stop  (fn [& params] (js/console.log "Leaving home page"))}]}]
-   ["?search={term}"
+     :view      views/home}]
+   ["search=:term"
     {:name      :routes/search
      :view      views/results-panel
-     :parameters {:query {:search {:term string?}}}
+     :parameters {:path {:term string?}}
      :link-text "Search"
      :controllers
-     [{:parameters {:query {:search :term}}
-       :start (fn [] (re-frame/dispatch [::events/get-writers :term]))
-       :stop  (fn [& params] (js/console.log "Leaving search"))}]}]
+     [{:parameters {:path [:term]}
+       :start (fn [params] (re-frame/dispatch [::events/get-writers (-> params :path :term)]))
+       :stop  (fn [] (re-frame/dispatch [::events/clear-search]))}]}]
    ["writer/:wid"
     {:name      :routes/writer
      :view      views/writer-panel
@@ -71,7 +86,7 @@
    {:data {:coercion rss/coercion}}))
 
 (defn init-routes! []
-  (re-frame/dispatch [::events/init-router router])
+  (re-frame/dispatch [::events/init-router-2 router])
   (rfe/start!
    router
    on-navigate
