@@ -8,7 +8,8 @@
    [reitit.frontend.easy :as rfe]
    [swg-website.config :refer [debug?]]
    [swg-website.db :as db]
-   [swg-website.queries :as q]))
+   [swg-website.queries :as q]
+   [cljs-http.client :as http]))
 
 ;; Effect Registrations
 ;; 
@@ -35,7 +36,15 @@
 (re-frame/reg-event-db
  ::clear-search
  (fn [db [_]]
-   (assoc db :search-term nil)))
+   (assoc db :cs nil)))
+
+(re-frame/reg-event-db
+ ::clear-current-writer
+ ^{:doc "Removes current writer and their matches from app-db"}
+ (fn [db [_]]
+   (-> db
+       (assoc :current-writer nil)
+       (assoc :writer-matches nil))))
 
 (re-frame/reg-event-db
  ::prev-page
@@ -53,7 +62,8 @@
  ::current-url
  (fn [cofx]
    (let [loc (.-location js/document)]
-     (assoc cofx ::current-url {:path  (.-pathname loc)
+     (assoc cofx ::current-url {:full  (str loc)
+                                :path  (.-pathname loc)
                                 :query (.-search loc)
                                 :hash  (.-hash loc)}))))
 
@@ -83,6 +93,21 @@
                  :active-route (r/match-by-path router path))})))
 
 (re-frame/reg-event-fx
+ ::init-router-2
+ ^{:doc ""}
+ [(re-frame/inject-cofx  ::current-url)]
+ (fn [cofx [_ router]]
+   (let [path (:full (::current-url cofx))
+         query (:query-params (http/parse-url path))
+         params {:term (:q query)}]
+     (if query
+       {:db (assoc (:db cofx)
+                   :active-route (r/match-by-name router :routes/search params))}
+       {:db (assoc (:db cofx)
+                   :active-route (r/match-by-path router path))}))))
+
+;; The event used to navigate to a another route
+(re-frame/reg-event-fx
  ::push-state
  ^{:doc "The event used to navigate to a another route"}
  (fn [db [_ & route]]
@@ -97,6 +122,8 @@
         controllers (rfc/apply-controllers (:controllers old-match) new-match)]
     (assoc db :active-route (assoc new-match :controllers controllers)))))
 
+;; TODO: clear writer and neighbor listings as well
+;; TODO: should this just re-initialize the default app-db?
 (re-frame/reg-event-fx
  ::clear-search-and-go-home
  (fn [{db :db} [_]]
@@ -118,35 +145,60 @@
                  :on-failure      [::bad-response]}
     :db  (-> db
              (assoc :loading? true)
-             (assoc :current-writer writer-map))})))
+             (assoc :current-writer writer-map)
+             )})))
+
+(re-frame/reg-event-fx
+ ::get-writer
+ (fn
+   [{db :db} [_ wid]]     ;; <-- 1st argument is coeffect, from which we extract db
+   (let [uri (if (= debug? true) "http://localhost:5000/writers/wid/" "/writers/wid/")]
+     {:http-xhrio {:method          :get
+                   :uri             (str uri wid)
+                   :format          (ajax/json-request-format)
+                   :response-format (ajax/json-response-format {:keywords? true})
+                   :on-success      [::writer-response]
+                   :on-failure      [::bad-response]}
+      :db  (-> db
+               (assoc :loading? true))})))
 
 (re-frame/reg-event-fx
  ::get-writers
- (fn [{db :db} _]
-   (let [term (get-in db [:search-term])
-         uri (if (= debug? true) "http://localhost:5000/writers/name_search/" "/writers/name_search/")]
+ ^{:doc "Takes the term passed through, formats it, and sends it to the backend
+         to retrieve results."}
+ (fn
+   [{db :db} [_ term]]
+   (let [split-term (clojure.string/replace term #"-" " ")
+         term-str   (apply str split-term)
+         uri        (if (= debug? true)
+                      "http://localhost:5000/writers/name_search/"
+                      "/writers/name_search/")]
      {:http-xhrio {:method          :get
-                   :uri             (str uri term)
+                   :uri             (str uri term-str)
                    :format          (ajax/json-request-format)
                    :response-format (ajax/json-response-format {:keywords? true})
-                   :on-success      [::writers-response] 
+                   :on-success      [::writers-response]
                    :on-failure      [::bad-response]}
-      :db  (assoc db :loading? true)})))
+      :db  (-> db 
+               (assoc :loading? true)
+               (assoc :search-term term-str))})))
 
 (re-frame/reg-event-fx
  ::writers-response
- ^{:doc "Takes writer search results as response, and tosses it in the app-db. 
-    It also associates a number of stats about the results to the app-db 
-    to compute pagination"}
- (fn [{db :db} [_ response]]
-   (let [res-count (count (js->clj response))
-         pg-count (int (/ res-count 10))]
-     {:db   (-> db
-                (assoc-in [:cs :results-page-number] 1)
-                (assoc-in [:cs :results-count] res-count)
-                (assoc-in [:cs :results-pages] pg-count)
-                (q/set-loading-state false)
-                (q/set-search-results response))})))
+ (fn
+  [{db :db} [_ response]]
+  {:db   (-> db
+             (q/set-loading-state false)
+             (q/set-search-results response))}))
+
+(re-frame/reg-event-fx
+ ::writer-response
+ (fn
+   [{db :db} [_ response]]
+   {:db   (-> db
+              (q/set-loading-state false))
+    :dispatch [::get-neighbors response]}))
+
 
 (re-frame/reg-event-fx
  ::neighbors-response
@@ -154,8 +206,7 @@
   [{db :db} [_ wid response]]
   {:db   (-> db
              (q/set-loading-state false)
-             (q/set-neighbors response))
-   :dispatch [::push-state :routes/writer {:wid wid}]}))
+             (q/set-neighbors response))}))
 
 (re-frame/reg-event-db
  ::bad-response
