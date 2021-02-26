@@ -1,4 +1,3 @@
-from collections import namedtuple
 import os
 import logging
 
@@ -152,7 +151,27 @@ class RetreiveNeighbors(Resource):
 
 
 class RetrieveWritersByName(Resource):
-    def get(self, writers_name):
+    def get(self, writers_name: str):
+        """Retrievs the 50 closest writers who's names are most similar
+        to the writers_name passed through. The search exludes writers
+        who are not indexed in the neighbors table (to ensure they have
+        neighbor results)
+        
+        e.g.,
+        
+        [
+            {
+                "ipi": "240089393",
+                "wid": 1940,
+                "writer_name": "CARTER SHAWN C"
+            },
+            {
+                "ipi": "240089589",
+                "wid": 4692,
+                "writer_name": "CARTER SHAWN  "
+            }
+        ]
+        """
         term = "%{}%".format(writers_name.upper())
         neighbors = Neighbors.query.with_entities(Neighbors.wid).all()
         just_ids = [i[0] for i in neighbors]
@@ -161,7 +180,7 @@ class RetrieveWritersByName(Resource):
 
 
 class RetrieveWriterByWID(Resource):
-    def get(self, wid):
+    def get(self, wid: int):
         """Retrieves the writer corresponding to the WID, along with
         a couple of summary stats.
         
@@ -195,8 +214,14 @@ api.add_resource(RetrieveWriterByWID, "/writers/wid/<int:wid>")
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
-def serve(path):
-    if path != "" and os.path.exists(app.static_folder + '/' + path):
+def serve(path: str):
+    if path.endswith(".css") or path.endswith(".ico") or path.endswith(".css.map"):
+        filename = path.split("/")[-1]
+        logging.info(filename)
+        return send_from_directory(app.static_folder, filename)
+    elif path.endswith(".js"):
+        return send_from_directory(app.static_folder, "js/compiled/app.js")
+    elif path != "" and os.path.exists(app.static_folder + '/' + path):
         logging.info(app.static_folder, path)
         return send_from_directory(app.static_folder, path)
     else:
