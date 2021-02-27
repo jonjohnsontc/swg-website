@@ -62,9 +62,22 @@ class Writers(db.Model):
     def __repr__(self):
         return f"<Writer name: {self.writer_name}, IPI: {self.ipi}>"
 
-
     def __str__(self):
         return f"{self.writer_name.capitalize()}"
+
+
+class WriterStats(db.Model):
+    wid = db.Column(db.Integer, primary_key=True)
+    mode_key = db.Column(db.Integer)
+    mode_time_signature = db.Column(db.Integer)
+    mean_tempo = db.Column(db.Float)
+    
+    def __repr__(self):
+        return f"<Summary Stats for: {self.wid}>"
+
+    def __str__(self):
+        return f"""{self.wid}, Mode Key: {self.mode_key}, Mode Time Signature: {self.mode_time_signature},
+                Mean Tempo: {self.mean_tempo}"""
 
 
 # Schema for API
@@ -82,15 +95,22 @@ class WritersSchema(ma.SQLAlchemySchema):
         fields = ("wid", "writer_name", "ipi")
         model = Writers
 
+
+class WriterStatsSchema(ma.SQLAlchemySchema):
+    class Meta:
+        fields = ("wid", "mode_key", "mean_tempo")
+        model = WriterStats
+
 neighbors_schema = NeighborsSchema()
 writers_schema = WritersSchema()
 writers_schema_many = WritersSchema(many=True)
+writer_stats_schema = WritersSchema()
 
 # Methods to retrieve from API (aka views)
 # TODO: Separate into another file
 class RetreiveNeighbors(Resource):
     # TODO: Most of this GET could be abstracted into another func
-    def get(self, wid):
+    def get(self, wid: int):
         """Retrieves the top 5 nearest neighbors for a given writer, 
         and returns their name, rank, wid, and ipi in a JSON array.
         The values are sorted by rank. 
@@ -131,7 +151,27 @@ class RetreiveNeighbors(Resource):
 
 
 class RetrieveWritersByName(Resource):
-    def get(self, writers_name):
+    def get(self, writers_name: str):
+        """Retrievs the 50 closest writers who's names are most similar
+        to the writers_name passed through. The search exludes writers
+        who are not indexed in the neighbors table (to ensure they have
+        neighbor results)
+        
+        e.g.,
+        
+        [
+            {
+                "ipi": "240089393",
+                "wid": 1940,
+                "writer_name": "CARTER SHAWN C"
+            },
+            {
+                "ipi": "240089589",
+                "wid": 4692,
+                "writer_name": "CARTER SHAWN  "
+            }
+        ]
+        """
         term = "%{}%".format(writers_name.upper())
         neighbors = Neighbors.query.with_entities(Neighbors.wid).all()
         just_ids = [i[0] for i in neighbors]
@@ -140,9 +180,32 @@ class RetrieveWritersByName(Resource):
 
 
 class RetrieveWriterByWID(Resource):
-    def get(self, wid):
-        writers = Writers.query.get_or_404(wid)
-        return writers_schema.dump(writers)
+    def get(self, wid: int):
+        """Retrieves the writer corresponding to the WID, along with
+        a couple of summary stats.
+        
+        e.g.,
+
+        {
+            "writer_name": "SCRUGGS CHARLES ",
+            "wid": 7,
+            "ipi": "337570160",
+            "mode_key": "10",
+            "mean_tempo": 120.84377777777776 
+        }
+
+        """
+        sql_stmt = f"""
+        SELECT writers.writer_name, writers.wid, writers.ipi,
+            summary_stats.mode_key, summary_stats.mean_tempo
+        FROM writers
+        JOIN summary_stats
+            ON summary_stats.wid = writers.wid
+        WHERE writers.wid = {wid};
+        """
+        writer = db.session.execute(sql_stmt)
+        formatted_result = dict(zip(writer.keys(),[stat for stat in writer.next()]))
+        return formatted_result
 
 
 api.add_resource(RetreiveNeighbors, "/neighbors/<int:wid>")
@@ -151,8 +214,14 @@ api.add_resource(RetrieveWriterByWID, "/writers/wid/<int:wid>")
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
-def serve(path):
-    if path != "" and os.path.exists(app.static_folder + '/' + path):
+def serve(path: str):
+    if path.endswith(".css") or path.endswith(".ico") or path.endswith(".css.map"):
+        filename = path.split("/")[-1]
+        logging.info(filename)
+        return send_from_directory(app.static_folder, filename)
+    elif path.endswith(".js"):
+        return send_from_directory(app.static_folder, "js/compiled/app.js")
+    elif path != "" and os.path.exists(app.static_folder + '/' + path):
         logging.info(app.static_folder, path)
         return send_from_directory(app.static_folder, path)
     else:
