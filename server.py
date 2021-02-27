@@ -110,7 +110,7 @@ writer_stats_schema = WritersSchema()
 # TODO: Separate into another file
 class RetreiveNeighbors(Resource):
     # TODO: Most of this GET could be abstracted into another func
-    def get(self, wid):
+    def get(self, wid: int):
         """Retrieves the top 5 nearest neighbors for a given writer, 
         and returns their name, rank, wid, and ipi in a JSON array.
         The values are sorted by rank. 

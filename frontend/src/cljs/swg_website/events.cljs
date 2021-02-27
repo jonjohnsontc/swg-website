@@ -39,7 +39,7 @@
    (assoc db :cs nil)))
 
 (re-frame/reg-event-db
- ::clear-current-writer
+ ::clear-current-writer 
  ^{:doc "Removes current writer and their matches from app-db"}
  (fn [db [_]]
    (-> db
