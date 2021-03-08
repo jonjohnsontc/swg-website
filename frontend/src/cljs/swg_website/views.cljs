@@ -1,6 +1,6 @@
 (ns swg-website.views
   (:require
-   [clojure.string :refer [trim]]
+   [clojure.string :refer [join replace split trim]]
    [re-frame.core :as re-frame]
    [swg-website.events :as events]
    [swg-website.subs :as subs]
@@ -9,9 +9,56 @@
 (def gh-address
   "https://github.com/jonjohnsontc/songwriter-graph")
 
+(def key-map
+  "The map that maps int pitch class 'key' values from the api to 
+   it's tonal counterpart
+   
+   https://en.wikipedia.org/wiki/Pitch_class"
+  {"0" "C"
+   "1" "C \u266F / B \u266D"
+   "2" "D"
+   "3" "D \u266F / E \u266D"
+   "4" "E"
+   "5" "F"
+   "6" "F \u266F / G \u266D"
+   "7" "G"
+   "8" "G \u266F / A \u266D"
+   "9" "A"
+   "10" "A \u266F / B \u266D"
+   "11" "B"})
+
+(defn get-tonal-key
+  "Grabs the tonal keys from the key-map based on the numbers in the key vec
+   and concats them together with a comma and space
+   
+   e.g.,
+   
+   C, C ♯ / B ♭"
+  [key-vec key-map]
+  (join "" (drop-last (trim (reduce #(str %1 (get key-map %2) ", ") "" key-vec))))) 
+
+(defn key-num->letter
+  ;; TODO: revise doctsring
+  "Helper function to map multiple key values to the key-map if writer
+   has more than one most common key.
+   
+   The API retuns a sequence of keys like a clj list e.g.,
+   
+   \"(1, 2)\"
+   
+   Returns key or keys as vector"
+  [key-val]
+  (if (> (count key-val) 2)
+    (-> key-val
+        (replace #"[()]" "")
+        (split #",")
+        (get-tonal-key key-map))
+    (get key-map key-val)))
+
 ;; Event Handlers(??)
 (defn update-search-term [term]
   (re-frame/dispatch [::events/save-name :search-term term]))
+
 
 ;; Sub-panels
 (defn swg-logo []
@@ -44,9 +91,9 @@
   "Typically displayed next to the search bar. Initiates search for writer"
   []
   (let [term @(re-frame/subscribe [::subs/search-term])]
-   [:button.button.is-primary.is-inline-flex.column.is-2.is-rounded
-   {:on-click #(re-frame/dispatch [::events/push-state :routes/search {:term (make-search-term term)}])} 
-    "Go"]))
+    [:button.button.is-primary.is-inline-flex.column.is-2.is-rounded
+     {:on-click #(re-frame/dispatch [::events/push-state :routes/search {:term (make-search-term term)}])}
+     "Go"]))
 
 ;; TODO: Link should show router url e.g., /neighbors/1234
 ;;                             (cljs e.g., (str "/neighbors/" (:wid writer-map)))
@@ -58,65 +105,63 @@
         :on-click #(re-frame/dispatch [::events/push-state :routes/writer {:wid (:wid writer-map)}])}
     (trim (:writer_name writer-map))]])
 
- (defn results-pagination
-   "Navigation for search results when there are greater than 10.
+(defn results-pagination
+  "Navigation for search results when there are greater than 10.
     If results are less than 10 - it's just an empty div"
-   []
-   (let [length @(re-frame/subscribe [::subs/results-count])
-         cur-pg @(re-frame/subscribe [::subs/results-page-number])
-         res-pg @(re-frame/subscribe [::subs/results-pages])
-         beginning? (if (= 1 cur-pg) true false)
-         end? (if (= res-pg cur-pg) true false)]
-     (if (> length 10)
-       [:nav.pagination.is-rounded.mt-6 {:role "navigation" :aria-label "navigation"}
-        [:a.pagination-previous
-         {:on-click (when (not= beginning? true) #(re-frame/dispatch [::events/prev-page]))
-          :disabled (when (= beginning? true) ":disabled")}
-         "Previous"]
-        [:a.pagination-next
-         {:on-click (when (not= end? true) #(re-frame/dispatch [::events/next-page]))
-          :disabled (when (= end? true) ":disabled")}
-         "Next"]]
-       [:div])))
+  []
+  (let [length @(re-frame/subscribe [::subs/results-count])
+        cur-pg @(re-frame/subscribe [::subs/results-page-number])
+        res-pg @(re-frame/subscribe [::subs/results-pages])
+        beginning? (if (= 1 cur-pg) true false)
+        end? (if (= res-pg cur-pg) true false)]
+    (if (> length 10)
+      [:nav.pagination.is-rounded.mt-6 {:role "navigation" :aria-label "navigation"}
+       [:a.pagination-previous
+        {:on-click (when (not= beginning? true) #(re-frame/dispatch [::events/prev-page]))
+         :disabled (when (= beginning? true) ":disabled")}
+        "Previous"]
+       [:a.pagination-next
+        {:on-click (when (not= end? true) #(re-frame/dispatch [::events/next-page]))
+         :disabled (when (= end? true) ":disabled")}
+        "Next"]]
+      [:div])))
 
 ;; https://stackoverflow.com/questions/37164091/how-do-i-loop-through-a-subscribed-collection-in-re-frame-and-display-the-data-a/37186230#37186230
 (defn results-listing
   "The div that contains the search results listing"
   [results]
   (let [length (count (:values @(re-frame/subscribe [::subs/current-search])))]
-   [:div.info-content.column.is-7
-    [:div.subtitle.is-2 (str length " Search Results")]
-    [:div.content   ;; 'content' class to show bullet points
-     (into [:ul] (map writer-result results))]
-    [results-pagination]]))
+    [:div.info-content.column.is-7
+     [:div.subtitle.is-2 (str length " Search Results")]
+     [:div.content   ;; 'content' class to show bullet points
+      (into [:ul] (map writer-result results))]
+     [results-pagination]]))
 
-(defn full-results 
+(defn full-results
   "Shows search results on page"
   []
   (let [results (:values @(re-frame/subscribe [::subs/current-search]))
-        page-no @(re-frame/subscribe [::subs/results-page-number])
-        page (if (= 1 page-no) 0 page-no)]
-    [:<> 
-     [results-listing  (take 10 (nthrest results (* 10 page)))]]))
+        page-no (dec @(re-frame/subscribe [::subs/results-page-number]))]
+    [:<>
+     [results-listing  (take 10 (nthrest results (* 10 page-no)))]]))
 
 (defn neighbors-result-listing
   "List of nearest neighbors per writer"
   []
   (let [neighbors @(re-frame/subscribe [::subs/writer-matches])]
-    [:div
-     [:div "Closest Matches"]
+    [:div.neighbors-listing
+     [:div.is-size-3.has-text-centered "Closest Matches"]
      [:div.content   ;; 'content' class to show numbered list
       (into [:ol] (map writer-result neighbors))]]))
 
 ;; TODO: Wanna get a nice search bar animation for focus / clicking on it
-(defn search-bar 
+(defn search-bar
   "Search bar for the website. The one and only"
   []
   (let [term @(re-frame/subscribe [::subs/search-term])
         loading? @(re-frame/subscribe [::subs/loading])
         focus @(re-frame/subscribe [::subs/search-bar-focus])]
-    [:div.columns.search-bar {
-                              ;; Commented out until I deal with search bar focus
+    [:div.columns.search-bar {;; Commented out until I deal with search bar focus
                               ;; :tabindex 1
                               ;; :on-click #(re-frame/dispatch [::events/toggle-search-bar-focus])
                               }
@@ -127,12 +172,24 @@
        :on-change #(update-search-term (-> %  .-target .-value))}]
      [go-button]]))
 
-(defn writer-body []
-  (let [writer @(re-frame/subscribe [::subs/current-writer])]
-    [:div [:div.display-circle]
-     [:div [:div (:writer_name writer)]]
-     [:div [:div (str "IPI: " (:ipi writer))]]
-     [neighbors-result-listing]]))
+(defn writer-body
+  "All the info about a writer is displayed in here"
+  []
+  (let [writer  @(re-frame/subscribe [::subs/current-writer])
+        key     (key-num->letter (:mode_key writer))
+        tempo   (:mean_tempo writer)]
+    [:div.columns.tile.is-ancestor
+     [:div.column.is-1]
+     [:div.column.is-10.card.py-6.px-6
+      [:div.mb-3.display-circle]
+      [:div
+       [:div.is-size-2 (:writer_name writer)]
+       [:div.is-size-3.mb-5.has-text-grey (str "IPI: " (:ipi writer))]]
+      [:div]
+      [:div.is-inline-flex
+       [:div.divider [:div.is-size-4.stat-line.has-text-centered "Mostly writes in"] [:div.stat key]]
+       [:div.divider.mb-5 [:div.is-size-4.stat-line.has-text-centered "Avg Tempo"] [:div.stat tempo]]]
+      [neighbors-result-listing]]]))
 
 (defn header
   "The header for the website. Does not include the search bar"
@@ -149,7 +206,7 @@
   "The header for the website. Does not include the search bar"
   []
   (let [toggle @(re-frame/subscribe [::subs/burger-menu])]
-    [:nav.navbar.is-white.is-spaced.is-tab.header 
+    [:nav.navbar.is-white.is-spaced.is-tab.header
      {:role "navigation" :aria-label "main navigation"}
      [:div.navbar-brand
       [swg-logo]
@@ -191,10 +248,11 @@
   [prompt]
   [:div.home-content
    [:div.columns [:div.column.is-1]
-    [:div.column.is-7 [:h2.subtitle.is-2 prompt]
-     [:div.column.is-full.my-5] 
-     [:div.columns.is-mobile 
-      [:div.column.is-two-thirds [search-bar]]]]]])
+    [:div.column.search-and-prompt.card.is-4.pl-5.py-5
+     [:h2.subtitle.is-2.has-text-centered prompt]
+     [:div.column.is-full.my-5]
+     [:div.columns.is-mobile
+      [:div.column [search-bar]]]]]])
 
 ;; Panels
 ;; The main "frames" of the website
