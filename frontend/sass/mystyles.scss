@@ -32,7 +32,7 @@ input[type="text"] {
 
 // Website Parts
 .app {
-    background-color: $off-white-1;
+    background-color: rgb(222, 227, 253);
     width: 100vw;
     height: 100vh;
     overflow-y: auto;
@@ -43,7 +43,7 @@ input[type="text"] {
 }
 
 .info-content {
-    margin-top: 100px;
+    margin-top: 25px;
 }
 
 .header {
@@ -51,6 +51,10 @@ input[type="text"] {
     border-bottom-color: $primary;
     border-bottom-style: solid;
     height: 80px;
+}
+
+.search-and-prompt {
+  border: 1px solid $green-1;
 }
 
 .search-bar {
@@ -63,12 +67,39 @@ input[type="text"] {
 }
 
 .writer-result {
-    padding-top: 35px;
+    padding-top: 15px;
     font-size: 2em;
 
     &:nth-child(3n) { color: $purple; }
     &:nth-child(3n+1) { color: $orange; }
     &:nth-child(3n+2) { color: $green-1; }
+}
+
+.neighbors-listing {
+  background-color: $off-white-1;
+  width: 600px;
+  border-block: 1px solid black;
+  padding: 25px;  
+}
+
+.stat {
+  font-size: 3em; 
+}
+
+.divider {
+  border-right: 1px solid black;
+  padding-right: 25px;
+  height: 150px;
+  &:last-child { 
+    border-right: 0; 
+    padding-right: 0;
+    padding-left: 25px;
+  }
+}
+
+.stat-line {
+  padding-top: 10px;
+
 }
 
 // Shapes + Animations

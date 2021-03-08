@@ -12,7 +12,7 @@ input[type=text]:focus {
 }
 
 .app {
-  background-color: #f6f4f4;
+  background-color: #dee3fd;
   width: 100vw;
   height: 100vh;
   overflow-y: auto;
@@ -23,7 +23,7 @@ input[type=text]:focus {
 }
 
 .info-content {
-  margin-top: 100px;
+  margin-top: 25px;
 }
 
 .header {
@@ -31,6 +31,10 @@ input[type=text]:focus {
   border-bottom-color: #BB6BD9;
   border-bottom-style: solid;
   height: 80px;
+}
+
+.search-and-prompt {
+  border: 1px solid #6FCF97;
 }
 
 .search-bar {
@@ -41,7 +45,7 @@ input[type=text]:focus {
 }
 
 .writer-result {
-  padding-top: 35px;
+  padding-top: 15px;
   font-size: 2em;
 }
 .writer-result:nth-child(3n) {
@@ -52,6 +56,32 @@ input[type=text]:focus {
 }
 .writer-result:nth-child(3n+2) {
   color: #6FCF97;
+}
+
+.neighbors-listing {
+  background-color: #f6f4f4;
+  width: 600px;
+  border-block: 1px solid black;
+  padding: 25px;
+}
+
+.stat {
+  font-size: 3em;
+}
+
+.divider {
+  border-right: 1px solid black;
+  padding-right: 25px;
+  height: 150px;
+}
+.divider:last-child {
+  border-right: 0;
+  padding-right: 0;
+  padding-left: 25px;
+}
+
+.stat-line {
+  padding-top: 10px;
 }
 
 .display-circle {

@@ -191,13 +191,18 @@ class RetrieveWriterByWID(Resource):
             "wid": 7,
             "ipi": "337570160",
             "mode_key": "10",
-            "mean_tempo": 120.84377777777776 
+            "mean_tempo": 120.84
         }
 
         """
+        if not isinstance(wid, int):
+            raise TypeError("WID must be int")
+        if not wid < 100000000:
+            raise TypeError("WID is too large")
+
         sql_stmt = f"""
         SELECT writers.writer_name, writers.wid, writers.ipi,
-            summary_stats.mode_key, summary_stats.mean_tempo
+            summary_stats.mode_key, to_char(summary_stats.mean_tempo, '999D99') as mean_tempo
         FROM writers
         JOIN summary_stats
             ON summary_stats.wid = writers.wid
@@ -205,6 +210,7 @@ class RetrieveWriterByWID(Resource):
         """
         writer = db.session.execute(sql_stmt)
         formatted_result = dict(zip(writer.keys(),[stat for stat in writer.next()]))
+
         return formatted_result
 
 

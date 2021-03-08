@@ -13,7 +13,12 @@
   (get db :search-term))
 
 (defn set-search-results [db results]
-  (assoc-in db [:cs :values] (js->clj results)))
+  (let [res-count (count results)]
+   (-> db
+       (assoc-in [:cs :values] (js->clj results))
+       (assoc-in [:cs :results-count] res-count)
+       (assoc-in [:cs :results-pages] (int (+ 1 (/ res-count 10))))
+       (assoc-in [:cs :results-page-number] 1))))
 
 (defn set-neighbors [db results]
   (assoc-in db [:writer-matches] (js->clj results)))
