@@ -244,6 +244,12 @@
       [nav-button "GitHub" nil]
       [:div.navbar-end]]]))
 
+(defn for-o-for
+  "The error page"
+  [prompt]
+  [:div.columns.tile.is-ancestor
+   [:div.column.is-1]
+   [:div.column.is-10.card.py-6.px-6 prompt]])
 
 (defn home-content
   "The main content within the landing page of the app"
@@ -283,5 +289,5 @@
 (defn error-panel []
   [:div.app
    [header-w-search-bar]
-   [:div "404. Sorry the page your looking for cannot be found"]
+   [for-o-for "404 - Sorry the page your looking for cannot be found"]
    [footer]])
