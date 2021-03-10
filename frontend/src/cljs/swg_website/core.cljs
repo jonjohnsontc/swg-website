@@ -43,7 +43,11 @@
      :controllers
      [{:parameters {:path [:wid]}
        :start (fn [params] (re-frame/dispatch [::events/get-writer (-> params :path :wid)]))
-       :stop  (fn [] (re-frame/dispatch [::events/clear-current-writer]))}]}]])
+       :stop  (fn [] (re-frame/dispatch [::events/clear-current-writer]))}]}]
+   ["404"
+    {:name :routes/for-o-for
+     :view views/error-panel
+     :link-text "404"}]])
 
 (defn on-navigate [new-match]
   (when new-match
@@ -55,7 +59,7 @@
    {:data {:coercion rss/coercion}}))
 
 (defn init-routes! []
-  (re-frame/dispatch [::events/init-router-2 router])
+  (re-frame/dispatch [::events/init-router router])
   (rfe/start!
    router
    on-navigate

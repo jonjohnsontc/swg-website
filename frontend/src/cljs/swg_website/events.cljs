@@ -88,23 +88,13 @@
  ^{:doc "Initializes the router and points the app at the proper route"}
  [(re-frame/inject-cofx  ::current-url)]
  (fn [cofx [_ router]]
-   (let [path (:path (::current-url cofx))]
-     {:db (assoc (:db cofx)
-                 :active-route (r/match-by-path router path))})))
-
-(re-frame/reg-event-fx
- ::init-router-2
- ^{:doc ""}
- [(re-frame/inject-cofx  ::current-url)]
- (fn [cofx [_ router]]
-   (let [path (:full (::current-url cofx))
-         query (:query-params (http/parse-url path))
-         params {:term (:q query)}]
-     (if query
+   (let [path  (:path (::current-url cofx))
+         match (r/match-by-path router path)]
+     (if (= match nil)
        {:db (assoc (:db cofx)
-                   :active-route (r/match-by-name router :routes/search params))}
+                   :active-route (r/match-by-path router "/404"))}
        {:db (assoc (:db cofx)
-                   :active-route (r/match-by-path router path))}))))
+                 :active-route (r/match-by-path router path))}))))
 
 ;; The event used to navigate to a another route
 (re-frame/reg-event-fx
