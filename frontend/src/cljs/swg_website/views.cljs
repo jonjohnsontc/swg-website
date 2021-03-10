@@ -35,6 +35,8 @@
    
    C, C ♯ / B ♭"
   [key-vec key-map]
+  ;; trim and drop-last are used to remove an additional comma and space that
+  ;;   comes with this method e.g., 'C, C ♯ / B ♭, '
   (join "" (drop-last (trim (reduce #(str %1 (get key-map %2) ", ") "" key-vec))))) 
 
 (defn key-num->letter
@@ -252,7 +254,9 @@
      [:h2.subtitle.is-2.has-text-centered prompt]
      [:div.column.is-full.my-5]
      [:div.columns.is-mobile
-      [:div.column [search-bar]]]]]])
+      [:div.column.is-2]
+      [:div.column [search-bar]]
+      [:div.column.is-2]]]]])
 
 ;; Panels
 ;; The main "frames" of the website
@@ -274,4 +278,10 @@
    [header-w-search-bar]
    [:div.info-content
     [writer-body]]
+   [footer]])
+
+(defn error-panel []
+  [:div.app
+   [header-w-search-bar]
+   [:div "404. Sorry the page your looking for cannot be found"]
    [footer]])

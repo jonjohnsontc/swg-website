@@ -92,20 +92,6 @@
      {:db (assoc (:db cofx)
                  :active-route (r/match-by-path router path))})))
 
-(re-frame/reg-event-fx
- ::init-router-2
- ^{:doc ""}
- [(re-frame/inject-cofx  ::current-url)]
- (fn [cofx [_ router]]
-   (let [path (:full (::current-url cofx))
-         query (:query-params (http/parse-url path))
-         params {:term (:q query)}]
-     (if query
-       {:db (assoc (:db cofx)
-                   :active-route (r/match-by-name router :routes/search params))}
-       {:db (assoc (:db cofx)
-                   :active-route (r/match-by-path router path))}))))
-
 ;; The event used to navigate to a another route
 (re-frame/reg-event-fx
  ::push-state
