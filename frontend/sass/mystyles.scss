@@ -6,6 +6,7 @@ $purple: #BB6BD9;
 $orange: #F2994A;
 $green-1: #6FCF97;
 $off-white-1: #f6f4f4;
+$off-white-2: #F9F9FA;
 
 
 // Bulma Global Vars
@@ -32,7 +33,7 @@ input[type="text"] {
 
 // Website Parts
 .app {
-    background-color: rgb(222, 227, 253);
+    background-color: $off-white-2;
     width: 100vw;
     height: 100vh;
     overflow-y: auto;

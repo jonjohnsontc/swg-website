@@ -12,7 +12,7 @@ input[type=text]:focus {
 }
 
 .app {
-  background-color: #dee3fd;
+  background-color: #F9F9FA;
   width: 100vw;
   height: 100vh;
   overflow-y: auto;
