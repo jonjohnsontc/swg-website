@@ -1,6 +1,6 @@
 (ns swg-website.views
   (:require
-   [clojure.string :refer [join replace split trim]]
+   [clojure.string :refer [join lower-case replace split trim]]
    [re-frame.core :as re-frame]
    [swg-website.events :as events]
    [swg-website.subs :as subs]
@@ -84,8 +84,13 @@
 (defn nav-button
   "The links to the right of the logo and sometimes search bar up top"
   [name on-click]
-  (if (nil? on-click)
+  (cond 
+    (nil? on-click)
     [:div.is-inline-flex.is-clickable.navbar-item.level-item [:a] name]
+    (coll? on-click)
+    [:div.is-inline-flex.is-clickable.navbar-item.level-item
+     [:a {:href (str "/" (lower-case name)) :on-click #(re-frame/dispatch on-click)} name]]
+    (string? on-click)
     [:div.is-inline-flex.is-clickable.navbar-item.level-item
      [:a {:href on-click} name]]))
 
@@ -184,7 +189,7 @@
   [:div.columns
    [:div.column.is-1]
    [:div.column.is-10.card.py-6.px-6
-    [:div.card-content "About"]]
+    [:div.card-content [:p.title "About"]]]
    [:div.column.is-1]])
 
 (defn writer-body
@@ -232,7 +237,7 @@
        [:span {:aria-hidden "true"}]
        [:span {:aria-hidden "true"}]]]
      [:div.navbar-menu {:class (when (= true toggle) "is-active")}
-      [nav-button "About" nil]
+      [nav-button "About" [::events/push-state :routes/about]]
       [nav-button "GitHub" gh-address]
       [:div.navbar-end]]]))
 

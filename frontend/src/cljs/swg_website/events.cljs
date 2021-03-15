@@ -1,6 +1,7 @@
 (ns  swg-website.events
   (:require
    [ajax.core :as ajax]
+   [clojure.string :refer [lower-case]]
    [cljs-http.client :as http]
    [re-frame.core :as re-frame]
    [day8.re-frame.http-fx]
@@ -88,7 +89,7 @@
  ^{:doc "Initializes the router and points the app at the proper route"}
  [(re-frame/inject-cofx  ::current-url)]
  (fn [cofx [_ router]]
-   (let [path  (:path (::current-url cofx))
+   (let [path  (lower-case (:path (::current-url cofx)))
          match (r/match-by-path router path)]
      (if (= match nil)
        {:db (assoc (:db cofx)
