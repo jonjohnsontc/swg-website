@@ -47,7 +47,11 @@
    ["404"
     {:name :routes/for-o-for
      :view views/error-panel
-     :link-text "404"}]])
+     :link-text "404"}]
+   ["about"
+    {:name :routes/about
+     :view views/about-panel
+     :link-text "About"}]])
 
 (defn on-navigate [new-match]
   (when new-match

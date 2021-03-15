@@ -87,7 +87,10 @@
   (if (nil? on-click)
     [:div.is-inline-flex.is-clickable.navbar-item.level-item [:a] name]
     [:div.is-inline-flex.is-clickable.navbar-item.level-item
-     [:a {:on-click #(re-frame/dispatch [on-click %])}] name]))
+     [:a {:href on-click} name]]))
+
+(comment
+  (nil? "hi"))
 
 (defn go-button
   "Typically displayed next to the search bar. Initiates search for writer"
@@ -174,13 +177,23 @@
        :on-change #(update-search-term (-> %  .-target .-value))}]
      [go-button]]))
 
+(defn about-body
+  "Main content in the About page.
+   Stylized like a blog post"
+  []
+  [:div.columns
+   [:div.column.is-1]
+   [:div.column.is-10.card.py-6.px-6
+    [:div.card-content "About"]]
+   [:div.column.is-1]])
+
 (defn writer-body
   "All the info about a writer is displayed in here"
   []
   (let [writer  @(re-frame/subscribe [::subs/current-writer])
         key     (key-num->letter (:mode_key writer))
         tempo   (:mean_tempo writer)]
-    [:div.columns.tile.is-ancestor
+    [:div.columns
      [:div.column.is-1]
      [:div.column.is-10.card.py-6.px-6
       [:div.mb-3.display-circle]
@@ -201,7 +214,7 @@
     [:div.column [swg-logo]]
     [:div.column.is-1 [nav-button "About" nil]]
     [:div.column.is-narrow]
-    [:div.column.is-1  [nav-button "GitHub" nil]]]])
+    [:div.column.is-1  [nav-button "GitHub" gh-address]]]])
 
 ;; TODO: Finish
 (defn header-w-args
@@ -220,7 +233,7 @@
        [:span {:aria-hidden "true"}]]]
      [:div.navbar-menu {:class (when (= true toggle) "is-active")}
       [nav-button "About" nil]
-      [nav-button "GitHub" nil]
+      [nav-button "GitHub" gh-address]
       [:div.navbar-end]]]))
 
 (defn header-w-search-bar
@@ -241,13 +254,13 @@
       [:div.navbar-start]
       [:div.navbar-item.level-item [search-bar]]
       [nav-button "About" nil]
-      [nav-button "GitHub" nil]
+      [nav-button "GitHub" gh-address]
       [:div.navbar-end]]]))
 
 (defn for-o-for
   "The error page"
   [prompt]
-  [:div.columns.tile.is-ancestor
+  [:div.columns
    [:div.column.is-1]
    [:div.column.is-10.card.py-6.px-6 prompt]])
 
@@ -286,8 +299,16 @@
     [writer-body]]
    [footer]])
 
+(defn about-panel []
+  [:div.app
+   [header-w-search-bar]
+   [:div.info-content
+    [about-body]]
+   [footer]])
+
 (defn error-panel []
   [:div.app
    [header-w-search-bar]
-   [for-o-for "404 - Sorry the page your looking for cannot be found"]
+   [:div.info-content
+    [for-o-for "404 - Sorry the page your looking for cannot be found"]]
    [footer]])

@@ -1,5 +1,6 @@
-(ns swg-website.utils)
+(ns swg-website.utils
+  (:require [clojure.string :rename  {replace sreplace}]))
 
 (defn make-search-term [string]
   (-> string
-      (clojure.string/replace " " "-")))
+      (sreplace " " "-")))

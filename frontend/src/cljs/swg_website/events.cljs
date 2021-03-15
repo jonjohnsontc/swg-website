@@ -39,7 +39,7 @@
    (assoc db :cs nil)))
 
 (re-frame/reg-event-db
- ::clear-current-writer 
+ ::clear-current-writer
  ^{:doc "Removes current writer and their matches from app-db"}
  (fn [db [_]]
    (-> db
@@ -126,7 +126,8 @@
  ::get-neighbors
  (fn   
   [{db :db} [_ writer-map]]     ;; <-- 1st argument is coeffect, from which we extract db
-  (let [uri (if (= debug? true) "http://localhost:5000/neighbors/" "/neighbors/")]
+  ;;  TODOJON: Make sure the if form below works
+  (let [uri (if debug? "http://localhost:5000/neighbors/" "/neighbors/")]
    {:http-xhrio {:method          :get
                  :uri             (str uri (:wid writer-map))
                  :format          (ajax/json-request-format)
