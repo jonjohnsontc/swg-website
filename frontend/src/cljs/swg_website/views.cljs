@@ -110,7 +110,7 @@
 (defn writer-result
   "A single writer search result link"
   [writer-map]
-  [:li.writer-result
+   [:li.writer-result
    [:a {:href ""
         :on-click #(re-frame/dispatch [::events/push-state :routes/writer {:wid (:wid writer-map)}])}
     (trim (:writer_name writer-map))]])
@@ -188,7 +188,7 @@
   []
   [:div.columns
    [:div.column.is-1]
-   [:div.column.is-10.card.py-6.px-6
+   [:div.column.is-6.card.py-6.px-6
     [:div.card-content [:p.title "About"]]]
    [:div.column.is-1]])
 
@@ -200,7 +200,7 @@
         tempo   (:mean_tempo writer)]
     [:div.columns
      [:div.column.is-1]
-     [:div.column.is-10.card.py-6.px-6
+     [:div.column.is-6.card.py-6.px-6
       [:div.mb-3.display-circle]
       [:div
        [:div.is-size-2 (:writer_name writer)]
@@ -210,16 +210,6 @@
        [:div.divider [:div.is-size-4.stat-line.has-text-centered "Mostly writes in"] [:div.stat key]]
        [:div.divider.mb-5 [:div.is-size-4.stat-line.has-text-centered "Avg Tempo"] [:div.stat tempo]]]
       [neighbors-result-listing]]]))
-
-(defn header
-  "The header for the website. Does not include the search bar"
-  []
-  [:div.header.level
-   [:div.columns.level-left
-    [:div.column [swg-logo]]
-    [:div.column.is-1 [nav-button "About" nil]]
-    [:div.column.is-narrow]
-    [:div.column.is-1  [nav-button "GitHub" gh-address]]]])
 
 ;; TODO: Finish
 (defn header-w-args
@@ -258,7 +248,7 @@
      [:div.navbar-menu.level {:class (when (= true toggle) "is-active")}
       [:div.navbar-start]
       [:div.navbar-item.level-item [search-bar]]
-      [nav-button "About" nil]
+      [nav-button "About" [::events/push-state :routes/about]]
       [nav-button "GitHub" gh-address]
       [:div.navbar-end]]]))
 
