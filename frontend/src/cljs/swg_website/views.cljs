@@ -186,11 +186,15 @@
   "Main content in the About page.
    Stylized like a blog post"
   []
-  [:div.columns
+  (let [post (:0 @(re-frame/subscribe [::subs/about-page]))
+        [title content] (split post #"\n\n")]
+    [:div.columns
    [:div.column.is-1]
    [:div.column.is-6.card.py-6.px-6
-    [:div.card-content [:p.title "About"]]]
-   [:div.column.is-1]])
+    [:div.card-content 
+     [:p.title title]
+     [:div content]]]
+   [:div.column.is-1]]))
 
 (defn writer-body
   "All the info about a writer is displayed in here"

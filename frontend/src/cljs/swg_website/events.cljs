@@ -176,6 +176,20 @@
                (assoc :search-term term-str))})))
 
 (re-frame/reg-event-fx
+ ::get-post
+ (fn
+   [{db :db} [_ id blog?]]
+   (let [uri (if (= debug? true) "http://localhost:5000/posts/" "/posts/")]
+     {:http-xhrio {:method          :get
+                   :uri             (str uri id)
+                   :format          (ajax/json-request-format)
+                   :response-format (ajax/json-response-format {:keywords? true})
+                   :on-success      [::post-response blog?]
+                   :on-failure      [::bad-response]}
+      :db  (-> db
+               (assoc :loading? true))})))
+
+(re-frame/reg-event-fx
  ::writers-response
  (fn
   [{db :db} [_ response]]
@@ -199,6 +213,21 @@
   {:db   (-> db
              (q/set-loading-state false)
              (q/set-neighbors response))}))
+
+(re-frame/reg-event-fx
+ ::post-response
+ (fn
+   [{db :db} [_ blog? response]]
+   (if blog?
+     {:db   (-> db
+                (q/set-loading-state false)
+                ;; Eventually, this will assoc blog posts
+                ;; to the blog page
+                (comment (assoc db :blog response)))}
+     {:db   (-> db
+                (q/set-loading-state false)
+                (assoc :about-page response))})))
+
 
 (re-frame/reg-event-db
  ::bad-response

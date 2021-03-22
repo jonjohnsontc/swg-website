@@ -61,3 +61,8 @@
  ::results-pages
  (fn [db]
    (get-in db [:cs :results-pages])))
+
+(re-frame/reg-sub
+ ::about-page
+ (fn [db]
+   (get db :about-page)))
