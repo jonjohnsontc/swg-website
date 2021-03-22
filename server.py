@@ -1,5 +1,6 @@
 import os
 import logging
+from typing import Optional, Union
 
 from flask import Flask, send_from_directory
 from flask_cors import CORS
@@ -214,9 +215,40 @@ class RetrieveWriterByWID(Resource):
         return formatted_result
 
 
+class Posts(Resource):
+    def get(self, ids: Optional[Union[list[int], int]]=None):
+        """Retrieves a post or posts from the db corresponding to the 
+        id or ids passed. If no id is passed, all posts are retrieved.
+        """
+        if isinstance(ids, list):
+            sql_stmt = f"""
+            SELECT mkdown
+            FROM posts
+            WHERE id in {ids};"""
+        elif isinstance(ids, int):
+            sql_stmt = f"""
+            SELECT mkdown
+            FROM posts
+            WHERE id = {ids};"""
+        else:
+            sql_stmt = f"""
+            SELECT mkdown
+            FROM posts;"""
+        posts = db.session.execute(sql_stmt)
+        result_listing = posts.all()
+        result = self.format_results(result_listing)
+        return result
+
+    def format_results(self, results: list):
+        posts = {}
+        for idx, row in enumerate(results):
+            posts[f"{idx}"] = row[0]
+        return posts
+
 api.add_resource(RetreiveNeighbors, "/neighbors/<int:wid>")
 api.add_resource(RetrieveWritersByName, "/writers/name_search/<string:writers_name>")
 api.add_resource(RetrieveWriterByWID, "/writers/wid/<int:wid>")
+api.add_resource(Posts, "/posts/<int:ids>")
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
