@@ -2,6 +2,9 @@
   (:require
    [clojure.string :refer [join lower-case replace split trim]]
    [re-frame.core :as re-frame]
+   [markdown.core :refer [md->html]]
+   [hickory.core :refer [parse-fragment as-hiccup]]
+   [reagent-hickory.sweet :refer [html->hiccup]]
    [swg-website.events :as events]
    [swg-website.subs :as subs]
    [swg-website.utils :refer [make-search-term]]))
@@ -188,12 +191,13 @@
    Stylized like a blog post"
   []
   (let [post (:0 @(re-frame/subscribe [::subs/about-page]))
-        [title content] (split post #"\n\n")]
+        [title content] (split post #"\n\n")
+        html-title (html->hiccup (str (md->html title)))]
     [:div.columns
    [:div.column.is-1]
    [:div.column.is-6.card.py-6.px-6
-    [:div.card-content 
-     [:p.title title]
+    [:div.card-content
+     [:p.title html-title]
      [:div content]]]
    [:div.column.is-1]]))
 
