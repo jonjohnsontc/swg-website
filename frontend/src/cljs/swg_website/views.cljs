@@ -35,6 +35,7 @@
    
    C, C ♯ / B ♭"
   [key-vec key-map]
+  ;; TODO: interpose might be good to use here
   ;; trim and drop-last are used to remove an additional comma and space that
   ;;   comes with this method e.g., 'C, C ♯ / B ♭, '
   (join "" (drop-last (trim (reduce #(str %1 (get key-map %2) ", ") "" key-vec))))) 

@@ -5,7 +5,7 @@ from typing import Optional, Union
 from flask import Flask, send_from_directory
 from flask_cors import CORS
 from flask_marshmallow import Marshmallow
-from flask_restful import Api, Resource, fields
+from flask_restful import Api, Resource
 from flask_sqlalchemy import SQLAlchemy
 
 from dotenv import load_dotenv
@@ -210,7 +210,9 @@ class RetrieveWriterByWID(Resource):
         WHERE writers.wid = {wid};
         """
         writer = db.session.execute(sql_stmt)
-        formatted_result = dict(zip(writer.keys(),[stat for stat in writer.next()]))
+        cols = list(writer.keys())
+        vals = writer.all()[0] # Taking first result
+        formatted_result = dict(zip(cols,vals))
 
         return formatted_result
 
@@ -242,7 +244,7 @@ class Posts(Resource):
     def format_results(self, results: list):
         posts = {}
         for idx, row in enumerate(results):
-            posts[f"{idx}"] = row[0]
+            posts[f"{idx}"] = row[0] # Only one column
         return posts
 
 api.add_resource(RetreiveNeighbors, "/neighbors/<int:wid>")
