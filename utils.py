@@ -6,9 +6,6 @@ from server import db
 from dotenv import load_dotenv
 load_dotenv()
 
-PG_PASSWORD = os.getenv("POSTGRES_PASSWORD")
-DSN = f"host=localhost port=5432 user=postgress password={PG_PASSWORD}"
-
 class PostManager(object):
     """Class used to manage text `Posts` on the website. Basically, any blog
     style post would fall under this category.
@@ -48,11 +45,12 @@ class PostManager(object):
     def scan_content(self):
         """Ensures resulting HTML content does not have any malicious code"""
         pass
+    
+    def load_and_post(self):
+        pass
 
 pm = PostManager()
 post = pm.load_file("/Users/jonjohnson/dev/swg/swg-website/posts/About.md")
 pm.check_file(post)
 result = pm.send_to_posts(post)
 db.session.commit()
-logging.error(result)
-logging.error("lol")
