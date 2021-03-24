@@ -15,3 +15,10 @@
       (str)
       (md->html)
       (html->hiccup)))
+
+(comment
+  (defn verify-mkdown
+    "Verifies that markdown is good and has no malicious html"
+    [mkdown-str]
+    (-> mkdown-str
+        (:TODO Finish))))
