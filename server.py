@@ -1,10 +1,11 @@
 import os
 import logging
+from typing import Optional, Union
 
 from flask import Flask, send_from_directory
 from flask_cors import CORS
 from flask_marshmallow import Marshmallow
-from flask_restful import Api, Resource, fields
+from flask_restful import Api, Resource
 from flask_sqlalchemy import SQLAlchemy
 
 from dotenv import load_dotenv
@@ -209,14 +210,47 @@ class RetrieveWriterByWID(Resource):
         WHERE writers.wid = {wid};
         """
         writer = db.session.execute(sql_stmt)
-        formatted_result = dict(zip(writer.keys(),[stat for stat in writer.next()]))
+        cols = list(writer.keys())
+        vals = writer.all()[0] # Taking first result
+        formatted_result = dict(zip(cols,vals))
 
         return formatted_result
 
 
+class Posts(Resource):
+    def get(self, ids: Optional[Union[list[int], int]]=None):
+        """Retrieves a post or posts from the db corresponding to the 
+        id or ids passed. If no id is passed, all posts are retrieved.
+        """
+        if isinstance(ids, list):
+            sql_stmt = f"""
+            SELECT post
+            FROM posts
+            WHERE pid in {ids};"""
+        elif isinstance(ids, int):
+            sql_stmt = f"""
+            SELECT post
+            FROM posts
+            WHERE pid = {ids};"""
+        else:
+            sql_stmt = f"""
+            SELECT post
+            FROM posts;"""
+        posts = db.session.execute(sql_stmt)
+        result_listing = posts.all()
+        result = self.format_results(result_listing)
+        return result
+
+    def format_results(self, results: list):
+        posts = {}
+        for idx, row in enumerate(results):
+            posts[f"{idx}"] = row[0] # Only one column
+        return posts
+
 api.add_resource(RetreiveNeighbors, "/neighbors/<int:wid>")
 api.add_resource(RetrieveWritersByName, "/writers/name_search/<string:writers_name>")
 api.add_resource(RetrieveWriterByWID, "/writers/wid/<int:wid>")
+api.add_resource(Posts, "/posts/<int:ids>")
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')

@@ -1,10 +1,11 @@
 (ns swg-website.views
   (:require
-   [clojure.string :refer [join replace split trim]]
+   [clojure.string :refer [join lower-case replace split trim includes?]]
    [re-frame.core :as re-frame]
    [swg-website.events :as events]
    [swg-website.subs :as subs]
-   [swg-website.utils :refer [make-search-term]]))
+   [swg-website.utils :refer [make-search-term read-mkdown]]
+   [goog.html.textExtractor :refer [extractTextContent]]))
 
 (def gh-address
   "https://github.com/jonjohnsontc/songwriter-graph")
@@ -35,6 +36,7 @@
    
    C, C ♯ / B ♭"
   [key-vec key-map]
+  ;; TODO: interpose might be good to use here
   ;; trim and drop-last are used to remove an additional comma and space that
   ;;   comes with this method e.g., 'C, C ♯ / B ♭, '
   (join "" (drop-last (trim (reduce #(str %1 (get key-map %2) ", ") "" key-vec))))) 
@@ -84,10 +86,15 @@
 (defn nav-button
   "The links to the right of the logo and sometimes search bar up top"
   [name on-click]
-  (if (nil? on-click)
+  (cond 
+    (nil? on-click)
     [:div.is-inline-flex.is-clickable.navbar-item.level-item [:a] name]
+    (coll? on-click)
     [:div.is-inline-flex.is-clickable.navbar-item.level-item
-     [:a {:on-click #(re-frame/dispatch [on-click %])}] name]))
+     [:a {:href (str "/" (lower-case name)) :on-click #(re-frame/dispatch on-click)} name]]
+    (string? on-click)
+    [:div.is-inline-flex.is-clickable.navbar-item.level-item
+     [:a {:href on-click} name]]))
 
 (defn go-button
   "Typically displayed next to the search bar. Initiates search for writer"
@@ -102,10 +109,24 @@
 (defn writer-result
   "A single writer search result link"
   [writer-map]
-  [:li.writer-result
+   [:li.writer-result
    [:a {:href ""
         :on-click #(re-frame/dispatch [::events/push-state :routes/writer {:wid (:wid writer-map)}])}
     (trim (:writer_name writer-map))]])
+
+(defn par
+  "A block of text used in the about page & blog posts.
+   Reads markdown thru utility func and parses it into html tags and content"
+  [content]
+  (let [[tag _ text] (read-mkdown content)
+        cln-text (extractTextContent text)]
+    
+    ;; If our extracted text content looks like hiccup then we render the
+    ;;     regular text instead
+    ;; TODO: Think of a better way to parse nested hiccup?
+    (if (includes? cln-text "]")
+      [tag text]
+      [tag cln-text])))
 
 (defn results-pagination
   "Navigation for search results when there are greater than 10.
@@ -174,15 +195,30 @@
        :on-change #(update-search-term (-> %  .-target .-value))}]
      [go-button]]))
 
+(defn about-body
+  "Main content in the About page.
+   Stylized like a blog post"
+  []
+  (let [post (:0 @(re-frame/subscribe [::subs/about-page]))
+        [title & content] (split post #"\n\n")
+        html-title (read-mkdown title)]
+    [:div.columns
+   [:div.column.is-1]
+   [:div.column.is-6.card.py-6.px-6
+    [:div.card-content.content
+     [:p.title html-title]
+     (into [:div] (map par content))]]
+   [:div.column.is-1]]))
+
 (defn writer-body
   "All the info about a writer is displayed in here"
   []
   (let [writer  @(re-frame/subscribe [::subs/current-writer])
         key     (key-num->letter (:mode_key writer))
         tempo   (:mean_tempo writer)]
-    [:div.columns.tile.is-ancestor
+    [:div.columns
      [:div.column.is-1]
-     [:div.column.is-10.card.py-6.px-6
+     [:div.column.is-6.card.py-6.px-6
       [:div.mb-3.display-circle]
       [:div
        [:div.is-size-2 (:writer_name writer)]
@@ -192,16 +228,6 @@
        [:div.divider [:div.is-size-4.stat-line.has-text-centered "Mostly writes in"] [:div.stat key]]
        [:div.divider.mb-5 [:div.is-size-4.stat-line.has-text-centered "Avg Tempo"] [:div.stat tempo]]]
       [neighbors-result-listing]]]))
-
-(defn header
-  "The header for the website. Does not include the search bar"
-  []
-  [:div.header.level
-   [:div.columns.level-left
-    [:div.column [swg-logo]]
-    [:div.column.is-1 [nav-button "About" nil]]
-    [:div.column.is-narrow]
-    [:div.column.is-1  [nav-button "GitHub" nil]]]])
 
 ;; TODO: Finish
 (defn header-w-args
@@ -219,8 +245,8 @@
        [:span {:aria-hidden "true"}]
        [:span {:aria-hidden "true"}]]]
      [:div.navbar-menu {:class (when (= true toggle) "is-active")}
-      [nav-button "About" nil]
-      [nav-button "GitHub" nil]
+      [nav-button "About" [::events/push-state :routes/about]]
+      [nav-button "GitHub" gh-address]
       [:div.navbar-end]]]))
 
 (defn header-w-search-bar
@@ -240,14 +266,14 @@
      [:div.navbar-menu.level {:class (when (= true toggle) "is-active")}
       [:div.navbar-start]
       [:div.navbar-item.level-item [search-bar]]
-      [nav-button "About" nil]
-      [nav-button "GitHub" nil]
+      [nav-button "About" [::events/push-state :routes/about]]
+      [nav-button "GitHub" gh-address]
       [:div.navbar-end]]]))
 
 (defn for-o-for
   "The error page"
   [prompt]
-  [:div.columns.tile.is-ancestor
+  [:div.columns
    [:div.column.is-1]
    [:div.column.is-10.card.py-6.px-6 prompt]])
 
@@ -286,8 +312,16 @@
     [writer-body]]
    [footer]])
 
+(defn about-panel []
+  [:div.app
+   [header-w-search-bar]
+   [:div.info-content
+    [about-body]]
+   [footer]])
+
 (defn error-panel []
   [:div.app
    [header-w-search-bar]
-   [for-o-for "404 - Sorry the page your looking for cannot be found"]
+   [:div.info-content
+    [for-o-for "404 - Sorry the page your looking for cannot be found"]]
    [footer]])

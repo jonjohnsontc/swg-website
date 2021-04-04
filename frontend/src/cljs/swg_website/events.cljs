@@ -1,6 +1,7 @@
 (ns  swg-website.events
   (:require
    [ajax.core :as ajax]
+   [clojure.string :refer [lower-case]]
    [cljs-http.client :as http]
    [re-frame.core :as re-frame]
    [day8.re-frame.http-fx]
@@ -39,7 +40,7 @@
    (assoc db :cs nil)))
 
 (re-frame/reg-event-db
- ::clear-current-writer 
+ ::clear-current-writer
  ^{:doc "Removes current writer and their matches from app-db"}
  (fn [db [_]]
    (-> db
@@ -88,7 +89,7 @@
  ^{:doc "Initializes the router and points the app at the proper route"}
  [(re-frame/inject-cofx  ::current-url)]
  (fn [cofx [_ router]]
-   (let [path  (:path (::current-url cofx))
+   (let [path  (lower-case (:path (::current-url cofx)))
          match (r/match-by-path router path)]
      (if (= match nil)
        {:db (assoc (:db cofx)
@@ -126,7 +127,8 @@
  ::get-neighbors
  (fn   
   [{db :db} [_ writer-map]]     ;; <-- 1st argument is coeffect, from which we extract db
-  (let [uri (if (= debug? true) "http://localhost:5000/neighbors/" "/neighbors/")]
+  ;;  TODOJON: Make sure the if form below works
+  (let [uri (if debug? "http://localhost:5000/neighbors/" "/neighbors/")]
    {:http-xhrio {:method          :get
                  :uri             (str uri (:wid writer-map))
                  :format          (ajax/json-request-format)
@@ -174,6 +176,20 @@
                (assoc :search-term term-str))})))
 
 (re-frame/reg-event-fx
+ ::get-post
+ (fn
+   [{db :db} [_ id blog?]]
+   (let [uri (if (= debug? true) "http://localhost:5000/posts/" "/posts/")]
+     {:http-xhrio {:method          :get
+                   :uri             (str uri id)
+                   :format          (ajax/json-request-format)
+                   :response-format (ajax/json-response-format {:keywords? true})
+                   :on-success      [::post-response blog?]
+                   :on-failure      [::bad-response]}
+      :db  (-> db
+               (assoc :loading? true))})))
+
+(re-frame/reg-event-fx
  ::writers-response
  (fn
   [{db :db} [_ response]]
@@ -197,6 +213,21 @@
   {:db   (-> db
              (q/set-loading-state false)
              (q/set-neighbors response))}))
+
+(re-frame/reg-event-fx
+ ::post-response
+ (fn
+   [{db :db} [_ blog? response]]
+   (if blog?
+     {:db   (-> db
+                (q/set-loading-state false)
+                ;; Eventually, this will assoc blog posts
+                ;; to the blog page
+                (comment (assoc db :blog response)))}
+     {:db   (-> db
+                (q/set-loading-state false)
+                (assoc :about-page response))})))
+
 
 (re-frame/reg-event-db
  ::bad-response

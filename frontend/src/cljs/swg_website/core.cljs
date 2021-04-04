@@ -47,7 +47,14 @@
    ["404"
     {:name :routes/for-o-for
      :view views/error-panel
-     :link-text "404"}]])
+     :link-text "404"}]
+   ["about"
+    {:name :routes/about
+     :view views/about-panel
+     :link-text "About"
+     :controllers
+    ;; The below event should load the "About" page post
+     [{:start (fn [] (re-frame/dispatch [::events/get-post 1 false]))}]}]])
 
 (defn on-navigate [new-match]
   (when new-match
