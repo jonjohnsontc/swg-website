@@ -1,10 +1,11 @@
 (ns swg-website.views
   (:require
-   [clojure.string :refer [join lower-case replace split trim]]
+   [clojure.string :refer [join lower-case replace split trim includes?]]
    [re-frame.core :as re-frame]
    [swg-website.events :as events]
    [swg-website.subs :as subs]
-   [swg-website.utils :refer [make-search-term read-mkdown]]))
+   [swg-website.utils :refer [make-search-term read-mkdown]]
+   [goog.html.textExtractor :refer [extractTextContent]]))
 
 (def gh-address
   "https://github.com/jonjohnsontc/songwriter-graph")
@@ -95,9 +96,6 @@
     [:div.is-inline-flex.is-clickable.navbar-item.level-item
      [:a {:href on-click} name]]))
 
-(comment
-  (nil? "hi"))
-
 (defn go-button
   "Typically displayed next to the search bar. Initiates search for writer"
   []
@@ -115,6 +113,20 @@
    [:a {:href ""
         :on-click #(re-frame/dispatch [::events/push-state :routes/writer {:wid (:wid writer-map)}])}
     (trim (:writer_name writer-map))]])
+
+(defn par
+  "A block of text used in the about page & blog posts.
+   Reads markdown thru utility func and parses it into html tags and content"
+  [content]
+  (let [[tag _ text] (read-mkdown content)
+        cln-text (extractTextContent text)]
+    
+    ;; If our extracted text content looks like hiccup then we render the
+    ;;     regular text instead
+    ;; TODO: Think of a better way to parse nested hiccup?
+    (if (includes? cln-text "]")
+      [tag text]
+      [tag cln-text])))
 
 (defn results-pagination
   "Navigation for search results when there are greater than 10.
@@ -188,14 +200,14 @@
    Stylized like a blog post"
   []
   (let [post (:0 @(re-frame/subscribe [::subs/about-page]))
-        [title content] (split post #"\n\n")
+        [title & content] (split post #"\n\n")
         html-title (read-mkdown title)]
     [:div.columns
    [:div.column.is-1]
    [:div.column.is-6.card.py-6.px-6
-    [:div.card-content
+    [:div.card-content.content
      [:p.title html-title]
-     [:div content]]]
+     (into [:div] (map par content))]]
    [:div.column.is-1]]))
 
 (defn writer-body

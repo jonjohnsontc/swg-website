@@ -31,19 +31,23 @@ class PostManager(object):
             raise ValueError(
         f"Post should be no langer than 300k characters. This post is {len(file)} chars")
         return
+
+    def escape_text(self, post: str) -> str:
+        """Escapes any text necessary before sending to postgres"""
+        escaped_post = post.replace("'", "''")
+        return escaped_post
     
-    def send_to_posts(self, post: str) -> None:
+    def send_to_posts(self, post_type: str, post: str) -> None:
         """Helper function to send markdown files to posts table"""
         sql_stmt = f"""
-            INSERT INTO posts (mkdown) 
-            VALUES ('{post}') 
-            RETURNING id;
+            INSERT INTO posts (ptype, post) 
+                VALUES ('{post_type}','{post}');
             """
         result = db.session.execute(sql_stmt)
         return result
 
     def scan_content(self):
-        """Ensures resulting HTML content does not have any malicious code"""
+        """Ensures HTML content does not have any malicious code"""
         pass
     
     def load_and_post(self):
@@ -52,5 +56,6 @@ class PostManager(object):
 pm = PostManager()
 post = pm.load_file("/Users/jonjohnson/dev/swg/swg-website/posts/About.md")
 pm.check_file(post)
-result = pm.send_to_posts(post)
+escaped_post = pm.escape_text(post)
+result = pm.send_to_posts('about', escaped_post)
 db.session.commit()

@@ -54,7 +54,7 @@
      :link-text "About"
      :controllers
     ;; The below event should load the "About" page post
-     [{:start (fn [] (re-frame/dispatch [::events/get-post 9 false]))}]}]])
+     [{:start (fn [] (re-frame/dispatch [::events/get-post 1 false]))}]}]])
 
 (defn on-navigate [new-match]
   (when new-match

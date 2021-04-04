@@ -224,17 +224,17 @@ class Posts(Resource):
         """
         if isinstance(ids, list):
             sql_stmt = f"""
-            SELECT mkdown
+            SELECT post
             FROM posts
-            WHERE id in {ids};"""
+            WHERE pid in {ids};"""
         elif isinstance(ids, int):
             sql_stmt = f"""
-            SELECT mkdown
+            SELECT post
             FROM posts
-            WHERE id = {ids};"""
+            WHERE pid = {ids};"""
         else:
             sql_stmt = f"""
-            SELECT mkdown
+            SELECT post
             FROM posts;"""
         posts = db.session.execute(sql_stmt)
         result_listing = posts.all()
