@@ -77,6 +77,6 @@
                    [day8.re-frame/tracing "0.5.3"]]
     :source-paths ["dev"]}
 
-   :prod {:closure-defines {:goog.DEBUG false}}})
+   :prod {:closure-defines {:goog.DEBUG false}}}
 
-  :prep-tasks []
+  :prep-tasks [])
