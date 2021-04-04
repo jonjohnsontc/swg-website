@@ -128,7 +128,7 @@
  (fn   
   [{db :db} [_ writer-map]]     ;; <-- 1st argument is coeffect, from which we extract db
   ;;  TODOJON: Make sure the if form below works
-  (let [uri (if debug? "http://localhost:8000/neighbors/" "/neighbors/")]
+  (let [uri (if debug? "http://localhost:5000/neighbors/" "/neighbors/")]
    {:http-xhrio {:method          :get
                  :uri             (str uri (:wid writer-map))
                  :format          (ajax/json-request-format)
@@ -144,7 +144,7 @@
  ::get-writer
  (fn
    [{db :db} [_ wid]]     ;; <-- 1st argument is coeffect, from which we extract db
-   (let [uri (if (= debug? true) "http://localhost:8000/writers/wid/" "/writers/wid/")]
+   (let [uri (if (= debug? true) "http://localhost:5000/writers/wid/" "/writers/wid/")]
      {:http-xhrio {:method          :get
                    :uri             (str uri wid)
                    :format          (ajax/json-request-format)
@@ -163,7 +163,7 @@
    (let [split-term (clojure.string/replace term #"-" " ")
          term-str   (apply str split-term)
          uri        (if (= debug? true)
-                      "http://localhost:8000/writers/name_search/"
+                      "http://localhost:5000/writers/name_search/"
                       "/writers/name_search/")]
      {:http-xhrio {:method          :get
                    :uri             (str uri term-str)
@@ -179,7 +179,7 @@
  ::get-post
  (fn
    [{db :db} [_ id blog?]]
-   (let [uri (if (= debug? true) "http://localhost:8000/posts/" "/posts/")]
+   (let [uri (if (= debug? true) "http://localhost:5000/posts/" "/posts/")]
      {:http-xhrio {:method          :get
                    :uri             (str uri id)
                    :format          (ajax/json-request-format)
