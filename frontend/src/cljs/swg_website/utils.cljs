@@ -1,8 +1,6 @@
 (ns swg-website.utils
   (:require
-   [clojure.string :rename  {replace sreplace} :refer [includes?]]
-   [cljs.reader :refer [read-string]]
-   [goog.html.textExtractor :refer [extractTextContent]]
+   [clojure.string :rename  {replace sreplace}]
    [markdown.core :refer [md->html]]
    [reagent-hickory.sweet :refer [html->hiccup]]))
 
@@ -17,15 +15,6 @@
       (str)
       (md->html)
       (html->hiccup)))
-
-(defn parse-hiccup-string
-  "Hopefully does what it says"
-  [hiccup-str]
-  (let [t-hic (includes? (extractTextContent hiccup-str) "]")
-        [tag _ text] (read-string hiccup-str)]
-   (if t-hic
-   [tag text]
-    hiccup-str)))
 
 (comment
   (defn verify-mkdown
