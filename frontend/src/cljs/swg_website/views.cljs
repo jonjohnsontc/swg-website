@@ -123,7 +123,7 @@
     
     ;; If our extracted text content looks like hiccup then we render the
     ;;     regular text instead
-    ;; TODO: Think of a better way to parse nested hiccup?
+    ;; TODO: Think of a better way to detect & parse nested hiccup?
     (if (includes? cln-text "]")
       [tag text]
       [tag cln-text])))

@@ -36,7 +36,7 @@
                                                           day8.re-frame-10x.preload]}}
                                :devtools {:http-root "resources/public"
                                           :http-port 8280
-                                          :proxy-url "http://localhost:5000"}
+                                          :proxy-url "http://localhost:8000"}
                                :closure-defines {"re_frame.trace.trace_enabled_QMARK_" true
                                                  "day8.re_frame.tracing.trace_enabled_QMARK_" true}}}}
 
