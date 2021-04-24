@@ -11,7 +11,10 @@ from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 load_dotenv()
 
-PG_PASSWORD = os.getenv("POSTGRES_PASSWORD")
+DB_HOST = os.getenv("DB_HOST")
+DB_USER = os.getenv("DB_USER")
+DB_NAME = os.getenv("DB_NAME")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
 
 app = Flask(__name__, static_folder="frontend/resources/public")
 
@@ -19,7 +22,11 @@ app = Flask(__name__, static_folder="frontend/resources/public")
 # Either config can be more robust or
 # this is fine
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres:password@localhost:5432/postgres'.replace("password", PG_PASSWORD)
+
+if os.getenv("FLASK_ENV") == "development":
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres:password@localhost:5432/postgres'.replace("password", PG_PASSWORD)
+else:
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:5432/{DB_NAME}'
 
 db = SQLAlchemy(app)
 api = Api(app)
@@ -269,4 +276,4 @@ def serve(path: str):
         return send_from_directory(app.static_folder, 'index.html')
 
 if __name__ == "__main__":
-   app.run(debug=True)
+   app.run(host='0.0.0.0', debug=True)
