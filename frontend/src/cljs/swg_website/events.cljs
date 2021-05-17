@@ -1,4 +1,4 @@
-(ns  swg-website.events
+(ns swg-website.events
   (:require
    [ajax.core :as ajax]
    [clojure.string :refer [lower-case]]
