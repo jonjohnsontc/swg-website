@@ -4,19 +4,12 @@ services:
         build:
             context: ./
         ports: 
-            - "5000:5000"
+            - "8000:8000"
         restart: always
+        volumes: 
+            - "/Users/jonjohnson/dev/swg/swg-website:/app"
         env_file: 
             ".env"
         stdin_open: true
         tty: true
-    db:
-        build:
-            context: ./db/
-        env_file: 
-            "./db/.env"
-        ports: 
-            - "5432:5432"
-        restart: always
-
         

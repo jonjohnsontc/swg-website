@@ -8,13 +8,6 @@ from flask_marshmallow import Marshmallow
 from flask_restful import Api, Resource
 from flask_sqlalchemy import SQLAlchemy
 
-from dotenv import load_dotenv
-load_dotenv()
-
-DB_HOST = os.getenv("DB_HOST")
-DB_USER = os.getenv("DB_USER")
-DB_NAME = os.getenv("DB_NAME")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
 
 app = Flask(__name__, static_folder="frontend/resources/public")
 
@@ -22,11 +15,7 @@ app = Flask(__name__, static_folder="frontend/resources/public")
 # Either config can be more robust or
 # this is fine
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-if os.getenv("FLASK_ENV") == "development":
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres:password@localhost:5432/postgres'.replace("password", PG_PASSWORD)
-else:
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:5432/{DB_NAME}'
+app.config['SQLALCHEMY_DATABASE_URI' ] = "sqlite:///swg.db"
 
 db = SQLAlchemy(app)
 api = Api(app)
@@ -210,7 +199,7 @@ class RetrieveWriterByWID(Resource):
 
         sql_stmt = f"""
         SELECT writers.writer_name, writers.wid, writers.ipi,
-            summary_stats.mode_key, to_char(summary_stats.mean_tempo, '999D99') as mean_tempo
+            summary_stats.mode_key, summary_stats.mean_tempo
         FROM writers
         JOIN summary_stats
             ON summary_stats.wid = writers.wid
@@ -220,6 +209,9 @@ class RetrieveWriterByWID(Resource):
         cols = list(writer.keys())
         vals = writer.all()[0] # Taking first result
         formatted_result = dict(zip(cols,vals))
+        
+        if isinstance(formatted_result["mean_tempo"], float):
+            formatted_result["mean_tempo"] = str(round(formatted_result["mean_tempo"], 2))
 
         return formatted_result
 
