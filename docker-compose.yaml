@@ -7,7 +7,7 @@ services:
             - "8000:8000"
         restart: always
         volumes: 
-            - "/Users/jonjohnson/dev/swg/swg-website:/app"
+            - "./:/app"
         env_file: 
             ".env"
         stdin_open: true
