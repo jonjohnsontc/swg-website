@@ -64,8 +64,7 @@
 (def router
   (rf/router
    routes
-   {:data {:coercion rss/coercion}
-    :compile coercion/compile-request-coercers}))
+   {:data {:coercion rss/coercion}}))
 
 (defn init-routes! []
   (re-frame/dispatch [::events/init-router router])
