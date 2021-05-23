@@ -3,7 +3,6 @@
    [reagent.dom :as rdom]
    [re-frame.core :as re-frame]
    [reitit.coercion.spec :as rss]
-   [reitit.coercion :as coercion]
    [reitit.frontend :as rf]
    [reitit.frontend.easy :as rfe]
    [swg-website.events :as events]
