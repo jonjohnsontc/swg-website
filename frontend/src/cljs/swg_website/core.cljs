@@ -1,14 +1,19 @@
 (ns swg-website.core
   (:require
+   [clojure.spec.alpha :as s]
    [reagent.dom :as rdom]
    [re-frame.core :as re-frame]
    [reitit.coercion.spec :as rss]
+   [reitit.coercion :as coercion]
    [reitit.frontend :as rf]
    [reitit.frontend.easy :as rfe]
    [swg-website.events :as events]
    [swg-website.subs :as subs]
    [swg-website.views :as views]
    [swg-website.config :as config]))
+
+(s/def ::wid int?)
+(s/def ::search-term string?)
 
 (defn href
   "Return relative url for given route. Url can be used in HTML links."
@@ -63,7 +68,8 @@
 (def router
   (rf/router
    routes
-   {:data {:coercion rss/coercion}}))
+   {:data {:coercion rss/coercion}
+    :compile coercion/compile-request-coercers}))
 
 (defn init-routes! []
   (re-frame/dispatch [::events/init-router router])

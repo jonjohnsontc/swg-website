@@ -41,7 +41,6 @@
 
 (re-frame/reg-event-db
  ::clear-current-writer
- ^{:doc "Removes current writer and their matches from app-db"}
  (fn [db [_]]
    (-> db
        (assoc :current-writer nil)
@@ -100,7 +99,6 @@
 ;; The event used to navigate to a another route
 (re-frame/reg-event-fx
  ::push-state
- ^{:doc "The event used to navigate to a another route"}
  (fn [db [_ & route]]
    {:push-state route}))
 
@@ -120,6 +118,12 @@
  (fn [{db :db} [_]]
    {:db (assoc db :search-term nil)
     :dispatch [::push-state :routes/home]}))
+
+(re-frame/reg-event-fx
+ ::save-name-and-search
+ (fn [{db :db} [_ term]]
+   {:db (assoc db :search-term term)
+    :dispatch [::push-state :routes/search term]}))
 
 ;; HTTP Request Related Events 
 ;; 
@@ -156,8 +160,6 @@
 
 (re-frame/reg-event-fx
  ::get-writers
- ^{:doc "Takes the term passed through, formats it, and sends it to the backend
-         to retrieve results."}
  (fn
    [{db :db} [_ term]]
    (let [split-term (clojure.string/replace term #"-" " ")
