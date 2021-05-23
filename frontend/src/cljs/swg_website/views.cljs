@@ -63,6 +63,10 @@
 (defn update-search-term [term]
   (re-frame/dispatch [::events/save-name :search-term term]))
 
+(defn make-search
+  [e term]
+  (.preventDefault e)
+  (re-frame/dispatch [::events/push-state :routes/search {:term (make-search-term term)}]))
 
 ;; Sub-panels
 (defn swg-logo []
@@ -96,20 +100,12 @@
     [:div.is-inline-flex.is-clickable.navbar-item.level-item
      [:a {:href on-click} name]]))
 
-(defn go-button
-  "Typically displayed next to the search bar. Initiates search for writer"
-  []
-  (let [term @(re-frame/subscribe [::subs/search-term])]
-    [:button.button.is-primary.is-inline-flex.column.is-2.is-rounded
-     {:on-click #(re-frame/dispatch [::events/push-state :routes/search {:term (make-search-term term)}])}
-     "Go"]))
-
 ;; TODO: Link should show router url e.g., /neighbors/1234
 ;;                             (cljs e.g., (str "/neighbors/" (:wid writer-map)))
 (defn writer-result
   "A single writer search result link"
   [writer-map]
-   [:li.writer-result
+  [:li.writer-result
    [:a {:href ""
         :on-click #(re-frame/dispatch [::events/push-state :routes/writer {:wid (:wid writer-map)}])}
     (trim (:writer_name writer-map))]])
@@ -184,16 +180,16 @@
   (let [term @(re-frame/subscribe [::subs/search-term])
         loading? @(re-frame/subscribe [::subs/loading])
         focus @(re-frame/subscribe [::subs/search-bar-focus])]
-    [:div.columns.search-bar {;; Commented out until I deal with search bar focus
-                              ;; :tabindex 1
-                              ;; :on-click #(re-frame/dispatch [::events/toggle-search-bar-focus])
-                              }
+    [:form.columns.search-bar
      [:input.input.column.is-10.is-rounded
       {:type "text"
        :value term
-       :class [(when (true? loading?) "is-loading")]
+       :class (when (true? loading?) "is-loading")
        :on-change #(update-search-term (-> %  .-target .-value))}]
-     [go-button]]))
+     [:input.button.is-primary.column.is-2.is-rounded.has-text-centered
+      {:type "submit"
+       :on-click (fn [e] (make-search e term))
+       :value "Go"}]]))
 
 (defn about-body
   "Main content in the About page.
@@ -202,13 +198,13 @@
   (let [post (:0 @(re-frame/subscribe [::subs/about-page]))
         [title & content] (split post #"\n\n")
         html-title (read-mkdown title)]
-    [:div.columns
+    [:div.columns]
    [:div.column.is-1]
    [:div.column.is-6.card.py-6.px-6
     [:div.card-content.content
      [:p.title html-title]
      (into [:div] (map par content))]]
-   [:div.column.is-1]]))
+   [:div.column.is-1]))
 
 (defn writer-body
   "All the info about a writer is displayed in here"
