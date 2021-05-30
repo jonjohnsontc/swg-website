@@ -85,7 +85,6 @@
 
 (re-frame/reg-event-fx
  ::init-router 
- ^{:doc "Initializes the router and points the app at the proper route"}
  [(re-frame/inject-cofx  ::current-url)]
  (fn [cofx [_ router]]
    (let [path  (lower-case (:path (::current-url cofx)))
@@ -131,9 +130,12 @@
  ::get-neighbors
  (fn   
   [{db :db} [_ writer-map]]     ;; <-- 1st argument is coeffect, from which we extract db
-  ;;  TODOJON: Make sure the if form below works
   (let [uri (if debug? "http://localhost:5000/neighbors/" "/neighbors/")]
-   {:http-xhrio {:method          :get
+    
+    ;; We set the title for a writer result page here. All others are done in `core/routes`
+    (set! (.-title js/document) (str (:writer_name writer-map) " - Songwriter Graph"))
+    
+    {:http-xhrio {:method          :get
                  :uri             (str uri (:wid writer-map))
                  :format          (ajax/json-request-format)
                  :response-format (ajax/json-response-format {:keywords? true})
@@ -141,13 +143,12 @@
                  :on-failure      [::bad-response]}
     :db  (-> db
              (assoc :loading? true)
-             (assoc :current-writer writer-map)
-             )})))
+             (assoc :current-writer writer-map))})))
 
 (re-frame/reg-event-fx
  ::get-writer
  (fn
-   [{db :db} [_ wid]]     ;; <-- 1st argument is coeffect, from which we extract db
+   [{db :db} [_ wid]]
    (let [uri (if (= debug? true) "http://localhost:5000/writers/wid/" "/writers/wid/")]
      {:http-xhrio {:method          :get
                    :uri             (str uri wid)

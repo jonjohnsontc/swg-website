@@ -8,7 +8,7 @@
                  [reagent "0.10.0"]
                  [com.7theta/re-frame-fx "0.2.1"]
                  [re-frame "1.1.1"]
-                 [day8.re-frame/http-fx "0.2.1"] ; For requests
+                 [day8.re-frame/http-fx "0.2.1"]
                  [metosin/reitit "0.5.5"]
                  [cljs-http "0.1.46"]
                  [markdown-clj "1.10.5"]

@@ -1,16 +1,4 @@
 @charset "UTF-8";
-input[type=text] {
-  background: transparent;
-  border: none;
-  -webkit-box-shadow: none;
-  box-shadow: none;
-  border-radius: 0;
-}
-input[type=text]:focus {
-  -webkit-box-shadow: none;
-  box-shadow: none;
-}
-
 .app {
   background-color: #F9F9FA;
   width: 100vw;
@@ -18,8 +6,12 @@ input[type=text]:focus {
   overflow-y: auto;
 }
 
+.site-prompt {
+  font-size: 5rem;
+}
+
 .home-content {
-  margin-top: 20%;
+  margin-top: 10%;
 }
 
 .info-content {
@@ -36,13 +28,6 @@ input[type=text]:focus {
 .search-and-prompt {
   border: 1px solid #6FCF97;
   min-width: 450px;
-}
-
-.search-bar {
-  background-color: transparent;
-  border: 1.5px solid #4a4a4a;
-  border-radius: 290486px;
-  max-width: 400px;
 }
 
 .writer-result {
@@ -2679,7 +2664,7 @@ a.tag:hover {
 
 .title {
   color: #363636;
-  font-size: 2rem;
+  font-size: 5rem;
   font-weight: 600;
   line-height: 1.125;
 }
