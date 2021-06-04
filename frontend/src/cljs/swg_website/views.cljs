@@ -5,9 +5,8 @@
    [swg-website.events :as events]
    [swg-website.subs :as subs]
    [swg-website.utils :refer [make-search-term read-mkdown]]
-   [goog.html.textExtractor :refer [extractTextContent]]
-   ["@mdi/react" :refer  [Icon]]
-   ["@mdi/js" :refer [mdiMusicNote mdiMagnify]]))
+   [swg-website.ui :as ui]
+   [goog.html.textExtractor :refer [extractTextContent]]))
 
 (def gh-address
   "https://github.com/jonjohnsontc/songwriter-graph")
@@ -29,14 +28,6 @@
    "9" "A"
    "10" "A \u266F / B \u266D"
    "11" "B"})
-
-(defn music-icon
-  []
-  [:> Icon {:path mdiMusicNote :size "1.5rem"}])
-
-(defn search-icon
-  []
-  [:> Icon {:path mdiMagnify :size "1.5rem"}])
 
 (defn get-tonal-key
   "Grabs the tonal keys from the key-map based on the numbers in the key vec
@@ -178,10 +169,12 @@
   "List of nearest neighbors per writer"
   []
   (let [neighbors @(re-frame/subscribe [::subs/writer-matches])]
-    [:div.neighbors-listing
-     [:div.is-size-3.has-text-centered "Closest Matches"]
-     [:div.content   ;; 'content' class to show numbered list
-      (into [:ol] (map writer-result neighbors))]]))
+    [:div.columns.is-centered.pt-4
+     [:article.tile.is-vertical.is-8.is-primary
+      [:div.is-size-3.has-text-centered.is-primary "Most Similar"]
+      [:div
+       [:div.content  ;; 'content' class to show numbered list
+        (into [:ol] (map writer-result neighbors))]]]]))
 
 ;; TODO: Wanna get a nice search bar animation for focus / clicking on it
 (defn search-bar
@@ -191,14 +184,14 @@
         loading? @(re-frame/subscribe [::subs/loading])
         focus @(re-frame/subscribe [::subs/search-bar-focus])]
     [:form.field.has-addons
-     [:div.control.has-icons-left
+     [:div.control.has-icons-left.is-expanded
       [:input.input.is-rounded
        {:type "text"
         :value term
         :class (when (true? loading?) "is-loading")
         :on-change #(update-search-term (-> %  .-target .-value))
         :placeholder "Search for a writer here"}]
-      [:div.icon.is-left [music-icon]]] ;TODO: figure out if you wanna keep this
+      [:div.icon.is-left [ui/music-icon]]] ;TODO: figure out if you wanna keep this
      [:div.control
       [:input.button.is-primary.is-rounded
       {:type "submit"
@@ -219,6 +212,19 @@
        [:p.title.is-2 html-title]
        (into [:div] (map par content))]]
      [:div.column.is-1]]))
+
+(defn stat-box
+  "Displays some high level stat about a writer.
+   - 'stat' is some deref'd subscription to a writer stat
+   - 'prompt' is some string to display above the stat
+   - 'icon' is some reagent component representing an icon" 
+  [stat prompt icon]
+  [:div.tile.is-4.is-parent
+   [:article.tile.is-child.stat-box
+    [:h1.title.is-size-5.stat-line.has-text-centered prompt]
+    [:p.subtitle.is-size-2.stat.has-text-centered stat]
+    [:div.columns.is-mobile.is-centered.mb-3
+     [icon]]]])
 
 (defn writer-body
   "All the info about a writer is displayed in here"
@@ -298,14 +304,15 @@
   "The main content within the landing page of the app"
   [prompt]
   [:div.home-content
-   [:div.columns
-    [:div.column.is-4] [:div.column.is-4
-                        [site-prompt prompt]
-                        [:div.column.is-full.my-5]
-                        [:div.columns.is-mobile
-                         [:div.column.is-3] [:div.column [search-bar]] [:div.column.is-1]]
-                        [:hr]
-                        [:h2.has-text-centered "Don't know where to start? Try a random match"]]]])
+   [:div.columns.is-centered
+    [:div.column.is-one-third-widescreen
+     [site-prompt prompt]]]
+   [:div.column.is-full.my-5]
+   [:div.columns.is-centered
+    [:div.column.is-narrow.is-one-quarter-widescreen.is-one-quarter-fullhd.is-one-third-desktop.is-one-half-touch
+     [search-bar]]]
+   [:hr]
+   [:h2.has-text-centered "Don't know where to start? Try a random match"]])
 
 ;; Panels
 ;; The main "frames" of the website
@@ -344,3 +351,40 @@
    [:div.info-content
     [for-o-for "404 - Sorry the page your looking for cannot be found"]]
    [footer]])
+
+;; Experimenting with tiles
+(defn another-panel 
+  []
+  (let [writer  @(re-frame/subscribe [::subs/current-writer])
+        key     (key-num->letter (:mode_key writer))
+        tempo   (:mean_tempo writer)]
+   [:div.app
+    [header-w-search-bar]
+    [:div.info-content
+     [:div.columns.is-centered
+      [:div.column.tile.is-ancestor.is-full-mobile.is-three-quarters-tablet.is-half-fullhd
+       [:div.tile.is-vertical.is-parent
+        [:article.box.tile.is-child.pb-6.notification.is-primary
+         [:div.columns.is-mobile.is-vcentered
+          [:h1.title.is-size-1-mobile.column.is-two-thirds (:writer_name writer)
+           [:p.subtitle.is-2.is-size-4-mobile (str "IPI: " (:ipi writer))]]
+          [ui/music-circle-icon {:size "33%" :class "column is-one-third"}]]
+         [:hr]
+         [:div.columns.is-mobile.is-centered.stat-panel.pt-3
+          [stat-box key "Primary Key(s)" ui/treble-clef-icon]
+          [:div.column.is-1]
+          [stat-box tempo "Avg Tempo" ui/tempo-icon]]
+         [:hr]
+         [neighbors-result-listing]]
+        [footer]]]]]]))
+
+(comment
+  [:div.divider.mb-5.column.is-3
+   [:div.is-size-4.stat-line "Mostly writes in"]
+   [:div.stat key]
+   [ui/treble-clef-icon]]
+  
+  [:div.divider.mb-5.column.is-3
+   [:div.is-size-4.stat-line "Avg Tempo"]
+   [:div.stat tempo]
+   [ui/tempo-icon]])

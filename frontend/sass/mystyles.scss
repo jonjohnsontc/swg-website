@@ -11,6 +11,8 @@ $off-white-2: #F9F9FA;
 
 // Bulma Global Vars
 $primary: $purple;
+$info: #F2994A;
+$success: #6FCF97;
 // $link: hsl(0, 0%, 4%); // same as $black
 $input-background-color: transparent;
 $navbar-tab-hover-border-bottom-color: $primary; // can't really tell
@@ -51,13 +53,40 @@ $title-size: 5rem;
   min-width: 450px;
 }
 
+.writer-panel {
+  border: 2px solid $primary;
+}
+
 .writer-result {
     padding-top: 15px;
     font-size: 2em;
 
-    &:nth-child(3n) { color: $purple; }
-    &:nth-child(3n+1) { color: $orange; }
-    &:nth-child(3n+2) { color: $green-1; }
+    &:hover,
+    &:active {
+      &::after {
+        content: '∙';
+        position: relative;
+        left: 1.7%;
+        top: 0.1rem;
+        font-size: 3rem;
+        line-height: 0%;
+      } 
+  }
+}
+
+.music-circle-icon {
+  position: relative;
+  left: 2%;
+}
+
+ul > .writer-result {
+  &:nth-child(3n) { color: $purple; }
+  &:nth-child(3n+1) { color: $orange; }
+  &:nth-child(3n+2) { color: $green-1; }
+}
+
+ul > circle {
+  fill: $purple;
 }
 
 .neighbors-listing {
@@ -67,14 +96,23 @@ $title-size: 5rem;
   padding: 25px;  
 }
 
-.stat {
-  font-size: 3em; 
+.stat-box {
+  flex-direction: column;
+  align-items: center;
+  display: flex;
+}
+
+.stat-panel {
+  min-width: 66.67%;
 }
 
 .divider {
-  border-right: 1px solid black;
-  padding-right: 25px;
+  border-right: 2px solid currentColor;
+  // padding-right: 25px;
   height: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   &:last-child { 
     border-right: 0; 
     padding-right: 0;
