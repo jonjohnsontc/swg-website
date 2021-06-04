@@ -298,7 +298,7 @@
 (defn site-prompt
   [prompt]
   [:<>
-   [:h2.title.has-text-centered prompt]])
+   [:h2.title.has-text-centered.is-size-1-mobile prompt]])
 
 (defn home-content
   "The main content within the landing page of the app"
@@ -309,9 +309,11 @@
      [site-prompt prompt]]]
    [:div.column.is-full.my-5]
    [:div.columns.is-centered
-    [:div.column.is-narrow.is-one-quarter-widescreen.is-one-quarter-fullhd.is-one-third-desktop.is-one-half-touch
+    [:div.column.is-narrow.is-one-quarter-widescreen.is-one-quarter-fullhd.is-one-third-desktop
      [search-bar]]]
-   [:hr]
+   [:div.columns.is-centered
+    [:div.column.is-half
+     [:hr]]]
    [:h2.has-text-centered "Don't know where to start? Try a random match"]])
 
 ;; Panels
