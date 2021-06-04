@@ -44,7 +44,7 @@
        :stop  (fn [] (re-frame/dispatch [::events/clear-search]))}]}]
    ["writer/:wid"
     {:name      :routes/writer
-     :view      views/another-panel
+     :view      views/writer-panel
      :link-text "Writer"
      :parameters {:path {:wid int?}}
      :controllers
