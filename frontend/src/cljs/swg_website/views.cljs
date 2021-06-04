@@ -226,25 +226,6 @@
     [:div.columns.is-mobile.is-centered.mb-3
      [icon]]]])
 
-(defn writer-body
-  "All the info about a writer is displayed in here"
-  []
-  (let [writer  @(re-frame/subscribe [::subs/current-writer])
-        key     (key-num->letter (:mode_key writer))
-        tempo   (:mean_tempo writer)]
-    [:div.columns
-     [:div.column.is-3]
-     [:div.column.is-6.py-6.px-6
-      [:div.mb-3.display-circle]
-      [:div
-       [:div.is-size-2 (:writer_name writer)]
-       [:div.is-size-3.mb-5.has-text-grey (str "IPI: " (:ipi writer))]]
-      [:div]
-      [:div.is-inline-flex
-       [:div.divider [:div.is-size-4.stat-line.has-text-centered "Mostly writes in"] [:div.stat key]]
-       [:div.divider.mb-5 [:div.is-size-4.stat-line.has-text-centered "Avg Tempo"] [:div.stat tempo]]]
-      [neighbors-result-listing]]]))
-
 ;; TODO: Finish
 (defn header-w-args
   "The header for the website. Does not include the search bar"
@@ -316,6 +297,29 @@
      [:hr]]]
    [:h2.has-text-centered "Don't know where to start? Try a random match"]])
 
+(defn writer-body 
+  "All the info about a writer is displayed in here"
+  []
+  (let [writer  @(re-frame/subscribe [::subs/current-writer])
+        key     (key-num->letter (:mode_key writer))
+        tempo   (:mean_tempo writer)]
+    [:div.columns.is-centered
+     [:div.column.tile.is-ancestor.is-full-mobile.is-three-quarters-tablet.is-half-fullhd
+      [:div.tile.is-vertical.is-parent
+       [:article.box.tile.is-child.pb-6.notification.is-primary
+        [:div.columns.is-mobile.is-vcentered
+         [:h1.title.is-size-1-mobile.column.is-two-thirds (:writer_name writer)
+          [:p.subtitle.is-2.is-size-4-mobile (str "IPI: " (:ipi writer))]]
+         [ui/music-circle-icon {:size "33%" :class "column is-one-third"}]]
+        [:hr]
+        [:div.columns.is-mobile.is-centered.stat-panel.pt-3
+         [stat-box key "Primary Key(s)" ui/treble-clef-icon]
+         [:div.column.is-1]
+         [stat-box tempo "Avg Tempo" ui/tempo-icon]]
+        [:hr]
+        [neighbors-result-listing]]
+       [footer]]]]))
+
 ;; Panels
 ;; The main "frames" of the website
 (defn home []
@@ -353,29 +357,3 @@
    [:div.info-content
     [for-o-for "404 - Sorry the page your looking for cannot be found"]]
    [footer]])
-
-;; Experimenting with tiles
-(defn another-panel 
-  []
-  (let [writer  @(re-frame/subscribe [::subs/current-writer])
-        key     (key-num->letter (:mode_key writer))
-        tempo   (:mean_tempo writer)]
-   [:div.app
-    [header-w-search-bar]
-    [:div.info-content
-     [:div.columns.is-centered
-      [:div.column.tile.is-ancestor.is-full-mobile.is-three-quarters-tablet.is-half-fullhd
-       [:div.tile.is-vertical.is-parent
-        [:article.box.tile.is-child.pb-6.notification.is-primary
-         [:div.columns.is-mobile.is-vcentered
-          [:h1.title.is-size-1-mobile.column.is-two-thirds (:writer_name writer)
-           [:p.subtitle.is-2.is-size-4-mobile (str "IPI: " (:ipi writer))]]
-          [ui/music-circle-icon {:size "33%" :class "column is-one-third"}]]
-         [:hr]
-         [:div.columns.is-mobile.is-centered.stat-panel.pt-3
-          [stat-box key "Primary Key(s)" ui/treble-clef-icon]
-          [:div.column.is-1]
-          [stat-box tempo "Avg Tempo" ui/tempo-icon]]
-         [:hr]
-         [neighbors-result-listing]]
-        [footer]]]]]]))
