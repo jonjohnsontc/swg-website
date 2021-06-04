@@ -379,14 +379,3 @@
          [:hr]
          [neighbors-result-listing]]
         [footer]]]]]]))
-
-(comment
-  [:div.divider.mb-5.column.is-3
-   [:div.is-size-4.stat-line "Mostly writes in"]
-   [:div.stat key]
-   [ui/treble-clef-icon]]
-  
-  [:div.divider.mb-5.column.is-3
-   [:div.is-size-4.stat-line "Avg Tempo"]
-   [:div.stat tempo]
-   [ui/tempo-icon]])

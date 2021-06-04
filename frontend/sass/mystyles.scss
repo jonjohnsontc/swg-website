@@ -19,7 +19,6 @@ $navbar-tab-hover-border-bottom-color: $primary; // can't really tell
 $navbar-tab-active-border-bottom-color: $primary; // can't really tell
 $navbar-breakpoint: 760px;
 $title-size: 5rem;
-// $footer-padding: 4rem 1rem 2rem;
 
 // Website Parts
 .app {
@@ -61,6 +60,7 @@ $title-size: 5rem;
     padding-top: 15px;
     font-size: 2em;
 
+    // Mimicking a bullet point on the right hand side of a writer result
     &:hover,
     &:active {
       &::after {
@@ -85,10 +85,6 @@ ul > .writer-result {
   &:nth-child(3n+2) { color: $green-1; }
 }
 
-ul > circle {
-  fill: $purple;
-}
-
 .neighbors-listing {
   background-color: $off-white-1;
   width: 600px;
@@ -108,7 +104,6 @@ ul > circle {
 
 .divider {
   border-right: 2px solid currentColor;
-  // padding-right: 25px;
   height: 150px;
   display: flex;
   flex-direction: column;

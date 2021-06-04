@@ -62,10 +62,6 @@ ul > .writer-result:nth-child(3n+2) {
   color: #6FCF97;
 }
 
-ul > circle {
-  fill: #BB6BD9;
-}
-
 .neighbors-listing {
   background-color: #f6f4f4;
   width: 600px;
