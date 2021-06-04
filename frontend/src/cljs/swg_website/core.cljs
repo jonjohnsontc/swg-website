@@ -19,13 +19,16 @@
   ([k params query]
    (rfe/href k params query)))
 
+
 ;; If I don't namespace the route names, it will assume it's within
 ;; the namespace of whatever code is being executed :shrug: - not sure why
 (def routes
   ["/"
    [""
     {:name      :routes/home
-     :view      views/home}]
+     :view      views/home
+     :controllers 
+     [{:start (fn [] (set! (.-title js/document) "Songwriter Graph"))}]}]
    ["search=:term"
     {:name      :routes/search
      :view      views/results-panel
@@ -33,11 +36,15 @@
      :link-text "Search"
      :controllers
      [{:parameters {:path [:term]}
-       :start (fn [params] (re-frame/dispatch [::events/get-writers (-> params :path :term)]))
+       :start (fn [params] 
+                (set!
+                 (.-title js/document)
+                 (str "Search Results for "  ""\" (-> params :path :term) ""\" " - Songwriter Graph"))
+                (re-frame/dispatch [::events/get-writers (-> params :path :term)]))
        :stop  (fn [] (re-frame/dispatch [::events/clear-search]))}]}]
    ["writer/:wid"
     {:name      :routes/writer
-     :view      views/writer-panel
+     :view      views/another-panel
      :link-text "Writer"
      :parameters {:path {:wid int?}}
      :controllers
@@ -47,14 +54,18 @@
    ["404"
     {:name :routes/for-o-for
      :view views/error-panel
-     :link-text "404"}]
+     :link-text "404"
+     :controllers
+     [{:start (fn [] (set! (.-title js/document) "404 - Songwriter Graph"))}]}]
    ["about"
     {:name :routes/about
      :view views/about-panel
      :link-text "About"
      :controllers
     ;; The below event should load the "About" page post
-     [{:start (fn [] (re-frame/dispatch [::events/get-post 1 false]))}]}]])
+     [{:start (fn [] 
+                (set! (.-title js/document) "About - Songwriter Graph")
+                (re-frame/dispatch [::events/get-post 1 false]))}]}]])
 
 (defn on-navigate [new-match]
   (when new-match

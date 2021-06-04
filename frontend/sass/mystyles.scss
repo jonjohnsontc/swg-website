@@ -11,25 +11,14 @@ $off-white-2: #F9F9FA;
 
 // Bulma Global Vars
 $primary: $purple;
+$info: #F2994A;
+$success: #6FCF97;
+// $link: hsl(0, 0%, 4%); // same as $black
 $input-background-color: transparent;
 $navbar-tab-hover-border-bottom-color: $primary; // can't really tell
 $navbar-tab-active-border-bottom-color: $primary; // can't really tell
 $navbar-breakpoint: 760px;
-
-// HTML Elements
-input[type="text"] {
-    background: transparent;
-    border: none;
-    -webkit-box-shadow: none;
-    box-shadow: none;
-    border-radius: 0;
-   
-  &:focus {
-    -webkit-box-shadow: none;
-    box-shadow: none;
-  }
-}
-
+$title-size: 5rem;
 
 // Website Parts
 .app {
@@ -39,8 +28,12 @@ input[type="text"] {
     overflow-y: auto;
 }
 
+.site-prompt {
+  font-size: 5rem;
+}
+
 .home-content {
-    margin-top: 20%;
+    margin-top: 10%;
 }
 
 .info-content {
@@ -59,22 +52,37 @@ input[type="text"] {
   min-width: 450px;
 }
 
-.search-bar {
-  background-color: transparent;
-  border: 1.5px solid #4a4a4a;
-  border-radius: 290486px;
-  max-width: 400px;
-
-  // &:focus { box-shadow: 1px -5px 800px white; }
+.writer-panel {
+  border: 2px solid $primary;
 }
 
 .writer-result {
     padding-top: 15px;
     font-size: 2em;
 
-    &:nth-child(3n) { color: $purple; }
-    &:nth-child(3n+1) { color: $orange; }
-    &:nth-child(3n+2) { color: $green-1; }
+    // Mimicking a bullet point on the right hand side of a writer result
+    &:hover,
+    &:active {
+      &::after {
+        content: '∙';
+        position: relative;
+        left: 1.7%;
+        top: 0.1rem;
+        font-size: 3rem;
+        line-height: 0%;
+      } 
+  }
+}
+
+.music-circle-icon {
+  position: relative;
+  left: 2%;
+}
+
+ul > .writer-result {
+  &:nth-child(3n) { color: $purple; }
+  &:nth-child(3n+1) { color: $orange; }
+  &:nth-child(3n+2) { color: $green-1; }
 }
 
 .neighbors-listing {
@@ -84,14 +92,22 @@ input[type="text"] {
   padding: 25px;  
 }
 
-.stat {
-  font-size: 3em; 
+.stat-box {
+  flex-direction: column;
+  align-items: center;
+  display: flex;
+}
+
+.stat-panel {
+  min-width: 66.67%;
 }
 
 .divider {
-  border-right: 1px solid black;
-  padding-right: 25px;
+  border-right: 2px solid currentColor;
   height: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   &:last-child { 
     border-right: 0; 
     padding-right: 0;

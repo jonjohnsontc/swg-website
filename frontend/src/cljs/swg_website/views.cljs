@@ -5,6 +5,7 @@
    [swg-website.events :as events]
    [swg-website.subs :as subs]
    [swg-website.utils :refer [make-search-term read-mkdown]]
+   [swg-website.ui :as ui]
    [goog.html.textExtractor :refer [extractTextContent]]))
 
 (def gh-address
@@ -82,7 +83,7 @@
      [:circle {:fill "#F2994A" :r "5" :cy "45" :cx "5"}]]]])
 
 (defn footer []
-  [:div])
+  [:footer.footer.has-text-centered "Made with 💜 by Jon Johnson"])
 
 (defn ellipsis [] ;; Not sure what `sr-only` is referring to
   [:div [:div.lds-ellipsis [:div] [:div] [:div] [:div] [:span.sr-only "Loading..."]]])
@@ -92,13 +93,13 @@
   [name on-click]
   (cond 
     (nil? on-click)
-    [:div.is-inline-flex.is-clickable.navbar-item.level-item [:a] name]
+    [:div.is-clickable.is-size-2.px-3.pb-2 [:a.navbar-item.pb-2] name]
     (coll? on-click)
-    [:div.is-inline-flex.is-clickable.navbar-item.level-item
-     [:a {:href (str "/" (lower-case name)) :on-click #(re-frame/dispatch on-click)} name]]
+    [:div.is-size-2.px-3
+     [:a.mb-2.navbar-item.subtitle.is-2 {:href (str "/" (lower-case name)) :on-click #(re-frame/dispatch on-click)} name]]
     (string? on-click)
-    [:div.is-inline-flex.is-clickable.navbar-item.level-item
-     [:a {:href on-click} name]]))
+    [:div.is-size-2.px-3
+     [:a.mb-2.navbar-item.subtitle.is-2 {:href on-click} name]]))
 
 ;; TODO: Link should show router url e.g., /neighbors/1234
 ;;                             (cljs e.g., (str "/neighbors/" (:wid writer-map)))
@@ -168,10 +169,12 @@
   "List of nearest neighbors per writer"
   []
   (let [neighbors @(re-frame/subscribe [::subs/writer-matches])]
-    [:div.neighbors-listing
-     [:div.is-size-3.has-text-centered "Closest Matches"]
-     [:div.content   ;; 'content' class to show numbered list
-      (into [:ol] (map writer-result neighbors))]]))
+    [:div.columns.is-centered.pt-4
+     [:article.tile.is-vertical.is-8.is-primary
+      [:div.is-size-3.has-text-centered.is-primary "Most Similar"]
+      [:div
+       [:div.content  ;; 'content' class to show numbered list
+        (into [:ol] (map writer-result neighbors))]]]]))
 
 ;; TODO: Wanna get a nice search bar animation for focus / clicking on it
 (defn search-bar
@@ -180,16 +183,20 @@
   (let [term @(re-frame/subscribe [::subs/search-term])
         loading? @(re-frame/subscribe [::subs/loading])
         focus @(re-frame/subscribe [::subs/search-bar-focus])]
-    [:form.columns.search-bar
-     [:input.input.column.is-10.is-rounded
-      {:type "text"
-       :value term
-       :class (when (true? loading?) "is-loading")
-       :on-change #(update-search-term (-> %  .-target .-value))}]
-     [:input.button.is-primary.column.is-2.is-rounded.has-text-centered
+    [:form.field.has-addons
+     [:div.control.has-icons-left.is-expanded
+      [:input.input.is-rounded
+       {:type "text"
+        :value term
+        :class (when (true? loading?) "is-loading")
+        :on-change #(update-search-term (-> %  .-target .-value))
+        :placeholder "Search for a writer here"}]
+      [:div.icon.is-left [ui/music-icon]]] ;TODO: figure out if you wanna keep this
+     [:div.control
+      [:input.button.is-primary.is-rounded
       {:type "submit"
        :on-click (fn [e] (make-search e term))
-       :value "Go"}]]))
+       :value "Go"}]]]))
 
 (defn about-body
   "Main content in the About page.
@@ -198,13 +205,26 @@
   (let [post (:0 @(re-frame/subscribe [::subs/about-page]))
         [title & content] (split post #"\n\n")
         html-title (read-mkdown title)]
-    [:div.columns]
-   [:div.column.is-1]
-   [:div.column.is-6.card.py-6.px-6
-    [:div.card-content.content
-     [:p.title html-title]
-     (into [:div] (map par content))]]
-   [:div.column.is-1]))
+    [:div.columns
+     [:div.column.is-3]
+     [:div.column.is-6
+      [:article.content
+       [:p.title.is-2 html-title]
+       (into [:div] (map par content))]]
+     [:div.column.is-1]]))
+
+(defn stat-box
+  "Displays some high level stat about a writer.
+   - 'stat' is some deref'd subscription to a writer stat
+   - 'prompt' is some string to display above the stat
+   - 'icon' is some reagent component representing an icon" 
+  [stat prompt icon]
+  [:div.tile.is-4.is-parent
+   [:article.tile.is-child.stat-box
+    [:h1.title.is-size-5.stat-line.has-text-centered prompt]
+    [:p.subtitle.is-size-2.stat.has-text-centered stat]
+    [:div.columns.is-mobile.is-centered.mb-3
+     [icon]]]])
 
 (defn writer-body
   "All the info about a writer is displayed in here"
@@ -213,8 +233,8 @@
         key     (key-num->letter (:mode_key writer))
         tempo   (:mean_tempo writer)]
     [:div.columns
-     [:div.column.is-1]
-     [:div.column.is-6.card.py-6.px-6
+     [:div.column.is-3]
+     [:div.column.is-6.py-6.px-6
       [:div.mb-3.display-circle]
       [:div
        [:div.is-size-2 (:writer_name writer)]
@@ -230,7 +250,7 @@
   "The header for the website. Does not include the search bar"
   []
   (let [toggle @(re-frame/subscribe [::subs/burger-menu])]
-    [:nav.navbar.is-white.is-spaced.is-tab.header
+    [:nav.navbar.is-spaced.is-tab.header
      {:role "navigation" :aria-label "main navigation"}
      [:div.navbar-brand
       [swg-logo]
@@ -241,15 +261,16 @@
        [:span {:aria-hidden "true"}]
        [:span {:aria-hidden "true"}]]]
      [:div.navbar-menu {:class (when (= true toggle) "is-active")}
-      [nav-button "About" [::events/push-state :routes/about]]
-      [nav-button "GitHub" gh-address]
+      [:div.navbar-start
+       [nav-button "About" [::events/push-state :routes/about]]
+       [nav-button "GitHub" gh-address]]
       [:div.navbar-end]]]))
 
 (defn header-w-search-bar
   "The header for the website, including search bar"
   []
   (let [toggle @(re-frame/subscribe [::subs/burger-menu])]
-    [:nav.navbar.is-white.is-spaced.is-tab.header
+    [:nav.navbar.is-spaced.is-tab.header
      {:role "navigation" :aria-label "main navigation"}
      [:div.navbar-brand
       [swg-logo]
@@ -259,39 +280,50 @@
        [:span {:aria-hidden "true"}]
        [:span {:aria-hidden "true"}]
        [:span {:aria-hidden "true"}]]]
-     [:div.navbar-menu.level {:class (when (= true toggle) "is-active")}
-      [:div.navbar-start]
-      [:div.navbar-item.level-item [search-bar]]
-      [nav-button "About" [::events/push-state :routes/about]]
-      [nav-button "GitHub" gh-address]
-      [:div.navbar-end]]]))
+     [:div.navbar-menu {:class (when (= true toggle) "is-active")}
+      [:div.navbar-start
+       [:div.navbar-item [search-bar]]]
+      [:div.navbar-end
+       [nav-button "About" [::events/push-state :routes/about]]
+       [nav-button "GitHub" gh-address]]]]))
 
 (defn for-o-for
   "The error page"
   [prompt]
   [:div.columns
-   [:div.column.is-1]
-   [:div.column.is-10.card.py-6.px-6 prompt]])
+   [:div.column.is-3]
+   [:div.column.is-6.py-6.px-6 
+    [:p.has-text-centered prompt]]])
+
+(defn site-prompt
+  [prompt]
+  [:<>
+   [:h2.title.has-text-centered.is-size-1-mobile prompt]])
 
 (defn home-content
   "The main content within the landing page of the app"
   [prompt]
   [:div.home-content
-   [:div.columns [:div.column.is-1]
-    [:div.column.search-and-prompt.card.is-4.pl-5.py-5
-     [:h2.subtitle.is-2.has-text-centered prompt]
-     [:div.column.is-full.my-5]
-     [:div.columns.is-mobile
-      [:div.column.is-2]
-      [:div.column [search-bar]]
-      [:div.column.is-2]]]]])
+   [:div.columns.is-centered
+    [:div.column.is-one-third-widescreen
+     [site-prompt prompt]]]
+   [:div.column.is-full.my-5]
+   [:div.columns.is-centered
+    [:div.column.is-narrow.is-one-quarter-widescreen.is-one-quarter-fullhd.is-one-third-desktop
+     [search-bar]]]
+   [:div.columns.is-centered
+    [:div.column.is-half
+     [:hr]]]
+   [:h2.has-text-centered "Don't know where to start? Try a random match"]])
 
 ;; Panels
 ;; The main "frames" of the website
 (defn home []
   [:div.app
    [header-w-args]
-   [home-content "Search for a writer here"]])
+   [home-content "Discover Thousands of Songwriters"]
+   [:div {:style {:height "5rem"}}]
+   [footer]])
 
 (defn results-panel []
   [:div.app
@@ -321,3 +353,29 @@
    [:div.info-content
     [for-o-for "404 - Sorry the page your looking for cannot be found"]]
    [footer]])
+
+;; Experimenting with tiles
+(defn another-panel 
+  []
+  (let [writer  @(re-frame/subscribe [::subs/current-writer])
+        key     (key-num->letter (:mode_key writer))
+        tempo   (:mean_tempo writer)]
+   [:div.app
+    [header-w-search-bar]
+    [:div.info-content
+     [:div.columns.is-centered
+      [:div.column.tile.is-ancestor.is-full-mobile.is-three-quarters-tablet.is-half-fullhd
+       [:div.tile.is-vertical.is-parent
+        [:article.box.tile.is-child.pb-6.notification.is-primary
+         [:div.columns.is-mobile.is-vcentered
+          [:h1.title.is-size-1-mobile.column.is-two-thirds (:writer_name writer)
+           [:p.subtitle.is-2.is-size-4-mobile (str "IPI: " (:ipi writer))]]
+          [ui/music-circle-icon {:size "33%" :class "column is-one-third"}]]
+         [:hr]
+         [:div.columns.is-mobile.is-centered.stat-panel.pt-3
+          [stat-box key "Primary Key(s)" ui/treble-clef-icon]
+          [:div.column.is-1]
+          [stat-box tempo "Avg Tempo" ui/tempo-icon]]
+         [:hr]
+         [neighbors-result-listing]]
+        [footer]]]]]]))
