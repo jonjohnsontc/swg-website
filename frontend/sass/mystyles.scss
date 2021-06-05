@@ -10,14 +10,12 @@ $off-white-2: #F9F9FA;
 
 
 // Bulma Global Vars
-$primary: $purple;
+$primary: #BB6BD9;
 $info: #F2994A;
 $success: #6FCF97;
-// $link: hsl(0, 0%, 4%); // same as $black
 $input-background-color: transparent;
-$navbar-tab-hover-border-bottom-color: $primary; // can't really tell
-$navbar-tab-active-border-bottom-color: $primary; // can't really tell
 $navbar-breakpoint: 760px;
+$navbar-item-hover-color: $primary;
 $title-size: 5rem;
 
 // Website Parts
