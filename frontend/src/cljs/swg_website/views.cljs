@@ -150,12 +150,14 @@
 (defn results-listing
   "The div that contains the search results listing"
   [results]
-  (let [length (count (:values @(re-frame/subscribe [::subs/current-search])))]
-    [:div.info-content.column.is-7
-     [:div.subtitle.is-2 (str length " Search Results")]
-     [:div.content   ;; 'content' class to show bullet points
-      (into [:ul] (map writer-result results))]
-     [results-pagination]]))
+  (let [length (count (:values @(re-frame/subscribe [::subs/current-search])))
+        res @(re-frame/subscribe [::subs/current-search])]
+    (if (nil? res) [ellipsis]
+      [:div.info-content.column.is-7
+       [:div.subtitle.is-2 (str length " Search Results")]
+       [:div.content   ;; 'content' class to show bullet points
+        (into [:ul] (map writer-result results))]
+       [results-pagination]])))
 
 (defn full-results
   "Shows search results on page"
@@ -169,12 +171,13 @@
   "List of nearest neighbors per writer"
   []
   (let [neighbors @(re-frame/subscribe [::subs/writer-matches])]
-    [:div.columns.is-centered.pt-4
-     [:article.tile.is-vertical.is-8.is-primary
-      [:div.is-size-3.has-text-centered.is-primary "Most Similar"]
-      [:div
-       [:div.content  ;; 'content' class to show numbered list
-        (into [:ol] (map writer-result neighbors))]]]]))
+    (if (nil? neighbors) [ellipsis]
+      [:div.columns.is-centered.pt-4
+       [:article.tile.is-vertical.is-8.is-primary
+        [:div.is-size-3.has-text-centered.is-primary "Most Similar"]
+        [:div
+         [:div.content  ;; 'content' class to show numbered list
+          (into [:ol] (map writer-result neighbors))]]]])))
 
 ;; TODO: Wanna get a nice search bar animation for focus / clicking on it
 (defn search-bar
@@ -295,7 +298,8 @@
    [:div.columns.is-centered
     [:div.column.is-half
      [:hr]]]
-   [:h2.has-text-centered "Don't know where to start? Try a random match"]])
+   [:h2.has-text-centered "Don't know where to start? Try a "
+    [:a {:on-click #(re-frame/dispatch [::events/push-state :routes/rand])} "random match"]]])
 
 (defn writer-body 
   "All the info about a writer is displayed in here"

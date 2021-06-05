@@ -160,6 +160,20 @@
                (assoc :loading? true))})))
 
 (re-frame/reg-event-fx
+ ::get-random-writer
+ (fn
+   [{db :db} [_]]
+   (let [uri (if (= debug? true) "http://localhost:5000/writers/random" "/writers/random")]
+     {:http-xhrio {:method          :get
+                   :uri             uri
+                   :format          (ajax/json-request-format)
+                   :response-format (ajax/json-response-format {:keywords? true})
+                   :on-success      [::writer-response]
+                   :on-failure      [::bad-response]}
+      :db  (-> db
+               (assoc :loading? true))})))
+
+(re-frame/reg-event-fx
  ::get-writers
  (fn
    [{db :db} [_ term]]

@@ -51,6 +51,13 @@
      [{:parameters {:path [:wid]}
        :start (fn [params] (re-frame/dispatch [::events/get-writer (-> params :path :wid)]))
        :stop  (fn [] (re-frame/dispatch [::events/clear-current-writer]))}]}]
+   ["rand"
+    {:name     :routes/rand
+     :view     views/writer-panel
+     :link-text "Random Writer"
+     :controllers
+     [{:start (fn [params] (re-frame/dispatch [::events/get-random-writer]))
+       :stop (fn [] (re-frame/dispatch [::events/clear-current-writer]))}]}]
    ["404"
     {:name :routes/for-o-for
      :view views/error-panel

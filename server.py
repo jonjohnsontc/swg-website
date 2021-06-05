@@ -216,6 +216,26 @@ class RetrieveWriterByWID(Resource):
         return formatted_result
 
 
+class RetrieveRandomWriter(Resource):
+    def get(self):
+        """Retrieves a random writer"""
+        sql_stmt = f"""
+        SELECT * FROM writers 
+            JOIN summary_stats
+                ON summary_stats.wid = writers.wid
+        ORDER BY RANDOM() LIMIT 1;
+        """
+        writer = db.session.execute(sql_stmt)
+        cols = list(writer.keys())
+        vals = writer.all()[0]
+        formatted_result = dict(zip(cols,vals))
+        
+        if isinstance(formatted_result["mean_tempo"], float):
+            formatted_result["mean_tempo"] = str(round(formatted_result["mean_tempo"], 2))
+
+        return formatted_result
+
+
 class Posts(Resource):
     def get(self, ids: Optional[Union[list[int], int]]=None):
         """Retrieves a post or posts from the db corresponding to the 
@@ -249,6 +269,7 @@ class Posts(Resource):
 api.add_resource(RetreiveNeighbors, "/neighbors/<int:wid>")
 api.add_resource(RetrieveWritersByName, "/writers/name_search/<string:writers_name>")
 api.add_resource(RetrieveWriterByWID, "/writers/wid/<int:wid>")
+api.add_resource(RetrieveRandomWriter, "/writers/random")
 api.add_resource(Posts, "/posts/<int:ids>")
 
 @app.route('/', defaults={'path': ''})
