@@ -111,6 +111,14 @@
         :on-click #(re-frame/dispatch [::events/push-state :routes/writer {:wid (:wid writer-map)}])}
     (trim (:writer_name writer-map))]])
 
+(defn neighbor-result
+  "A single writer search result link"
+  [writer-map]
+  [:li.writer-result
+   [:a {:href ""
+        :on-click #(re-frame/dispatch [::events/clear-search-and-load-writer writer-map])}
+    (trim (:writer_name writer-map))]])
+
 (defn par
   "A block of text used in the about page & blog posts.
    Reads markdown thru utility func and parses it into html tags and content"
@@ -147,13 +155,16 @@
       [:div])))
 
 ;; https://stackoverflow.com/questions/37164091/how-do-i-loop-through-a-subscribed-collection-in-re-frame-and-display-the-data-a/37186230#37186230
+;; TODO: Should prolly combine full-results and results-listing
 (defn results-listing
   "The div that contains the search results listing"
   [results]
   (let [length (count (:values @(re-frame/subscribe [::subs/current-search])))
         res @(re-frame/subscribe [::subs/current-search])]
-    (if (nil? res) [ellipsis]
-      [:div.info-content.column.is-7
+    (if (nil? res)
+      [:div.column.info-content.is-offset-1
+       [ellipsis]]
+      [:div.column.info-content.is-offset-1.is-7
        [:div.subtitle.is-2 (str length " Search Results")]
        [:div.content   ;; 'content' class to show bullet points
         (into [:ul] (map writer-result results))]
@@ -171,13 +182,12 @@
   "List of nearest neighbors per writer"
   []
   (let [neighbors @(re-frame/subscribe [::subs/writer-matches])]
-    (if (nil? neighbors) [ellipsis]
-      [:div.columns.is-centered.pt-4
-       [:article.tile.is-vertical.is-8.is-primary
-        [:div.is-size-3.has-text-centered.is-primary "Most Similar"]
-        [:div
-         [:div.content  ;; 'content' class to show numbered list
-          (into [:ol] (map writer-result neighbors))]]]])))
+    [:div.columns.is-centered.pt-4
+     [:article.tile.is-vertical.is-8.is-primary
+      [:div.is-size-3.has-text-centered.is-primary "Most Similar"]
+      [:div
+       [:div.content  ;; 'content' class to show numbered list
+        (into [:ol] (map neighbor-result neighbors))]]]]))
 
 ;; TODO: Wanna get a nice search bar animation for focus / clicking on it
 (defn search-bar
@@ -208,13 +218,11 @@
   (let [post (:0 @(re-frame/subscribe [::subs/about-page]))
         [title & content] (split post #"\n\n")
         html-title (read-mkdown title)]
-    [:div.columns
-     [:div.column.is-3]
-     [:div.column.is-6
+    [:div.columns.is-centered
+     [:div.column.is-6.is-8-desktop.is-8-touch
       [:article.content
        [:p.title.is-2 html-title]
-       (into [:div] (map par content))]]
-     [:div.column.is-1]]))
+       (into [:div] (map par content))]]]))
 
 (defn stat-box
   "Displays some high level stat about a writer.
@@ -289,7 +297,7 @@
   [prompt]
   [:div.home-content
    [:div.columns.is-centered
-    [:div.column.is-one-third-widescreen
+    [:div.column.is-one-third-widescreen.is-half-full-hd.is-three-quarters
      [site-prompt prompt]]]
    [:div.column.is-full.my-5]
    [:div.columns.is-centered
@@ -305,24 +313,28 @@
   "All the info about a writer is displayed in here"
   []
   (let [writer  @(re-frame/subscribe [::subs/current-writer])
+        neighbors @(re-frame/subscribe [::subs/writer-matches])
         key     (key-num->letter (:mode_key writer))
         tempo   (:mean_tempo writer)]
-    [:div.columns.is-centered
-     [:div.column.tile.is-ancestor.is-full-mobile.is-three-quarters-tablet.is-half-fullhd
-      [:div.tile.is-vertical.is-parent
-       [:article.box.tile.is-child.pb-6.notification.is-primary
-        [:div.columns.is-mobile.is-vcentered
-         [:h1.title.is-size-1-mobile.column.is-two-thirds (:writer_name writer)
-          [:p.subtitle.is-2.is-size-4-mobile (str "IPI: " (:ipi writer))]]
-         [ui/music-circle-icon {:size "33%" :class "column is-one-third"}]]
-        [:hr]
-        [:div.columns.is-mobile.is-centered.stat-panel.pt-3
-         [stat-box key "Primary Key(s)" ui/treble-clef-icon]
-         [:div.column.is-1]
-         [stat-box tempo "Avg Tempo" ui/tempo-icon]]
-        [:hr]
-        [neighbors-result-listing]]
-       [footer]]]]))
+    (if (nil? neighbors)
+      [:div.columns.is-centered
+       [:div.column.tile.is-ancestor.is-full-mobile.is-three-quarters-tablet.is-half-fullhd
+        [ellipsis]]]
+      [:div.columns.is-centered
+       [:div.column.tile.is-ancestor.is-full-mobile.is-three-quarters-tablet.is-half-fullhd.writer-card
+        [:div.tile.is-vertical.is-parent
+         [:article.box.tile.is-child.pb-6.notification.is-primary
+          [:div.columns.is-mobile.is-vcentered
+           [:h1.title.is-size-1-mobile.column.is-two-thirds (:writer_name writer)
+            [:p.subtitle.is-2.is-size-4-mobile (str "IPI: " (:ipi writer))]]
+           [ui/music-circle-icon {:size "33%" :class "column is-one-third"}]]
+          [:hr]
+          [:div.columns.is-mobile.is-centered.stat-panel.pt-3
+           [stat-box key "Primary Key(s)" ui/treble-clef-icon]
+           [:div.column.is-1]
+           [stat-box tempo "Avg Tempo" ui/tempo-icon]]
+          [:hr]
+          [neighbors-result-listing]]]]])))
 
 ;; Panels
 ;; The main "frames" of the website
@@ -337,7 +349,6 @@
   [:div.app
    [header-w-search-bar]
    [:div.columns
-    [:div.column.is-1]
     [full-results]]
    [footer]])
 

@@ -56,7 +56,7 @@
      :view     views/writer-panel
      :link-text "Random Writer"
      :controllers
-     [{:start (fn [params] (re-frame/dispatch [::events/get-random-writer]))
+     [{:start (fn [] (re-frame/dispatch [::events/get-random-writer]))
        :stop (fn [] (re-frame/dispatch [::events/clear-current-writer]))}]}]
    ["404"
     {:name :routes/for-o-for
