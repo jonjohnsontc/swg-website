@@ -47,6 +47,28 @@
   line-height: 0%;
 }
 
+.writer-card {
+  animation-name: slideUp;
+  animation-duration: 0.5s;
+  animation-timing-function: ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .writer-card {
+    animation: none;
+  }
+}
+@keyframes slideUp {
+  from {
+    margin-top: 100%;
+  }
+  50% {
+    margin-top: 80%;
+  }
+  to {
+    margin-top: 0%;
+  }
+}
+
 .music-circle-icon {
   position: relative;
   left: 2%;
@@ -116,27 +138,31 @@ ul > .writer-result:nth-child(3n+2) {
   width: 13px;
   height: 13px;
   border-radius: 50%;
-  background: var(--green-1);
+  background: currentColor;
   animation-timing-function: cubic-bezier(0, 1, 1, 0);
 }
 
 .lds-ellipsis div:nth-child(1) {
   left: 8px;
+  background: #BB6BD9;
   animation: lds-ellipsis1 0.6s infinite;
 }
 
 .lds-ellipsis div:nth-child(2) {
   left: 8px;
+  background: #F2994A;
   animation: lds-ellipsis2 0.6s infinite;
 }
 
 .lds-ellipsis div:nth-child(3) {
   left: 32px;
+  background: #6FCF97;
   animation: lds-ellipsis2 0.6s infinite;
 }
 
 .lds-ellipsis div:nth-child(4) {
   left: 56px;
+  background: #BB6BD9;
   animation: lds-ellipsis3 0.6s infinite;
 }
 

@@ -119,6 +119,12 @@
     :dispatch [::push-state :routes/home]}))
 
 (re-frame/reg-event-fx
+ ::clear-search-and-load-writer
+ (fn [{db :db} [_ writer-map]]
+   {:db (assoc db :search-term nil)
+    :dispatch [::push-state :routes/writer {:wid (:wid writer-map)}]}))
+
+(re-frame/reg-event-fx
  ::save-name-and-search
  (fn [{db :db} [_ term]]
    {:db (assoc db :search-term term)
