@@ -12,7 +12,14 @@
                  [metosin/reitit "0.5.5"]
                  [cljs-http "0.1.46"]
                  [markdown-clj "1.10.5"]
-                 [zjhmale/reagent-hickory "0.3.5"]]
+                 [zjhmale/reagent-hickory "0.3.5"]
+
+                ;; Experimenting with backend things 
+                ;;  http://pedestal.io/guides/hello-world
+                 [io.pedestal/pedestal.service       "0.5.9"]
+                 [io.pedestal/pedestal.jetty         "0.5.9"]
+                 [io.pedestal/pedestal.route       "0.5.9"]
+                 [org.slf4j/slf4j-simple  "1.7.28"]]
 
   :plugins [[lein-shadow "0.3.1"]
             [lein-shell "0.5.0"]
@@ -24,7 +31,7 @@
 
   :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"]
 
-
+  :main swg-website.main
 
   :shadow-cljs {:nrepl {:port 8777}
 
