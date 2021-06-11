@@ -31,7 +31,7 @@
 
   :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"]
 
-  :main swg-website.main
+  :main swg-website.server
 
   :shadow-cljs {:nrepl {:port 8777}
 
