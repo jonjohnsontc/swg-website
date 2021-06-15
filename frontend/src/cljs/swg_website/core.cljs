@@ -19,9 +19,6 @@
   ([k params query]
    (rfe/href k params query)))
 
-
-;; If I don't namespace the route names, it will assume it's within
-;; the namespace of whatever code is being executed :shrug: - not sure why
 (def routes
   ["/"
    [""
@@ -72,7 +69,7 @@
     ;; The below event should load the "About" page post
      [{:start (fn [] 
                 (set! (.-title js/document) "About - Songwriter Graph")
-                (re-frame/dispatch [::events/get-post 1 false]))}]}]])
+                (re-frame/dispatch [::events/get-post 11 false]))}]}]])
 
 (defn on-navigate [new-match]
   (when new-match

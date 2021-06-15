@@ -259,5 +259,3 @@
    (-> db
        (q/set-loading-state false)
        (q/set-error-message response))))
-
-

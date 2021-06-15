@@ -17,6 +17,7 @@ $input-background-color: transparent;
 $navbar-breakpoint: 760px;
 $navbar-item-hover-color: $primary;
 $title-size: 5rem;
+$family-sans-serif: "Manrope", BlinkMacSystemFont, -apple-system, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
 
 // Website Parts
 .app {
@@ -36,6 +37,11 @@ $title-size: 5rem;
 
 .info-content {
     margin-top: 25px;
+}
+
+.logo {
+  position: relative;
+  // top: 10%;
 }
 
 .header {
@@ -74,7 +80,7 @@ $title-size: 5rem;
 
 .writer-card {
   animation-name: slideUp;
-  animation-duration: 0.5s;
+  animation-duration: 0.2s;
   animation-timing-function: ease;
 
   @media (prefers-reduced-motion: reduce) {
@@ -84,10 +90,6 @@ $title-size: 5rem;
   @keyframes slideUp {
     from {
       margin-top: 100%;
-    }
-    
-    50% {
-      margin-top: 80%;
     }
 
     to {
