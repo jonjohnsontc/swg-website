@@ -6,7 +6,7 @@
    :current-writer nil
    :writer-matches nil
    :search-term ""
-   :burger-menu false
+  ;;  :burger-menu false
    :search-bar-focus false
    :loading? false
    :error-msg nil})
