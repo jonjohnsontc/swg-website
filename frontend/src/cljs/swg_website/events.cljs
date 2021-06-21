@@ -71,9 +71,7 @@
  ::toggle-burger-menu
  (fn [db [_]]
    (let [burger-status (:burger-menu db)]
-     (if (= true burger-status)
-       (assoc db :burger-menu false)
-       (assoc db :burger-menu true)))))
+     (assoc db :burger-menu (not burger-status)))))
 
 (re-frame/reg-event-db
  ::toggle-search-bar-focus
@@ -108,7 +106,9 @@
   [db [_ new-match]]
   (let [old-match (:active-route db)
         controllers (rfc/apply-controllers (:controllers old-match) new-match)]
-    (assoc db :active-route (assoc new-match :controllers controllers)))))
+    (-> db
+        (assoc :active-route (assoc new-match :controllers controllers))
+        (assoc :burger-menu false)))))
 
 ;; TODO: clear writer and neighbor listings as well
 ;; TODO: should this just re-initialize the default app-db?
