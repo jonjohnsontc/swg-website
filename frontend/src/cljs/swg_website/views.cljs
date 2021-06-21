@@ -1,6 +1,6 @@
 (ns swg-website.views
   (:require
-   [clojure.string :refer [join lower-case replace split trim includes?]]
+   [clojure.string :refer [join lower-case replace split trim includes? blank?]]
    [reagent.core :as r]
    [re-frame.core :as re-frame]
    [swg-website.events :as events]
@@ -93,10 +93,16 @@
      [:ellipse {:cx "86.5", :cy "52", :rx "9.5", :ry "9", :fill "#BB6BD9"}]]]])
 
 (defn footer []
-  [:footer.footer.has-text-centered "Made with 💜 by Jon Johnson"])
+  [:footer.footer.has-text-centered "Made with 💜 by "
+   [:a {:href "http://jonj.io"} "Jon Johnson"]])
 
 (defn ellipsis [] ;; Not sure what `sr-only` is referring to
   [:div [:div.lds-ellipsis [:div] [:div] [:div] [:div] [:span.sr-only "Loading..."]]])
+
+(defn loading-indicator []
+  [:div.columns.is-centered.is-mobile
+   [:div.column.tile.is-ancestor.is-full-mobile.is-three-quarters-tablet.is-half-fullhd
+    [ellipsis]]])
 
 (defn nav-button
   "The links to the right of the logo and sometimes search bar up top"
@@ -124,7 +130,7 @@
 (defn neighbor-result
   "A single writer search result link"
   [writer-map]
-  [:li.writer-result
+  [:li.writer-result.is-size-4
    [:a {:href ""
         :on-click #(re-frame/dispatch [::events/clear-search-and-load-writer writer-map])}
     (trim (:writer_name writer-map))]])
@@ -192,9 +198,9 @@
   "List of nearest neighbors per writer"
   []
   (let [neighbors @(re-frame/subscribe [::subs/writer-matches])]
-    [:div.columns.is-centered.pt-4
+    [:div.columns.is-mobile.is-centered.pt-4
      [:article.tile.is-vertical.is-8.is-primary
-      [:div.is-size-3.has-text-centered.is-primary "Most Similar"]
+      [:div.is-size-4.has-text-centered.is-primary "Most Similar"]
       [:div
        [:div.content  ;; 'content' class to show numbered list
         (into [:ol] (map neighbor-result neighbors))]]]]))
@@ -234,16 +240,17 @@
        [:p.title.is-2 html-title]
        (into [:div] (map par content))]]]))
 
+;; TODO: This doesn't feel idiomatic
 (defn stat-box
   "Displays some high level stat about a writer.
    - 'stat' is some deref'd subscription to a writer stat
    - 'prompt' is some string to display above the stat
    - 'icon' is some reagent component representing an icon" 
   [stat prompt icon]
-  [:div.tile.is-4.is-parent
+  [:div.tile.is-4-desktop.is-3-tablet.is-parent
    [:article.tile.is-child.stat-box
-    [:h1.title.is-size-5.stat-line.has-text-centered prompt]
-    [:p.subtitle.is-size-2.stat.has-text-centered stat]
+    [:h1.title.is-size-4.is-size-6-tablet.stat-line.has-text-centered prompt]
+    [:p.subtitle.is-size-2.is-size-5-tablet.is-size-5-mobile.stat.has-text-centered stat]
     [:div.columns.is-mobile.is-centered.mb-3
      [icon]]]])
 
@@ -252,26 +259,18 @@
 (defn header-w-args
   "The header for the website. Does not include the search bar"
   []
-  (let [
-        toggle (re-frame/subscribe [::subs/burger-menu])
-
-        ;; toggle (r/atom (:open false))
-        value (js/console.log toggle)]
+  (let [toggle @(re-frame/subscribe [::subs/burger-menu])]
     [:nav.navbar.is-tab.header
      {:role "navigation" :aria-label "main navigation"}
      [:div.navbar-brand
       [new-logo]
       [:a.navbar-burger {:role "button" :aria-label "menu" :aria-expanded "false"
-                         :class (when (true? @toggle) "is-active")
-                         :on-click 
-                        ;;  (fn [] (swap! toggle not :open))
-                         
-                         #(re-frame/dispatch [::events/toggle-burger-menu])
-                         }
+                         :class (when (true? toggle) "is-active")
+                         :on-click #(re-frame/dispatch [::events/toggle-burger-menu])}
        [:span {:aria-hidden "true"}]
        [:span {:aria-hidden "true"}]
        [:span {:aria-hidden "true"}]]]
-     [:div.navbar-menu {:class (when (= true @toggle) "is-active")}
+     [:div.navbar-menu {:class (when (true? toggle) "is-active")}
       [:div.navbar-start
        [nav-button "about" [::events/push-state :routes/about]]
        [nav-button "github" gh-address]]
@@ -332,20 +331,30 @@
   "All the info about a writer is displayed in here"
   []
   (let [writer  @(re-frame/subscribe [::subs/current-writer])
+        
+        ;; I'd like to render fonts dynamically, based on whether
+        ;; any part of the name could be broken up because of the 
+        ;; user's device. This could be really overengineered though
+        ;; Perhaps sticking to bulma `is-<size>` in plain hiccup is
+        ;; better.
+        ;; Potential way:
+        ;; name-length (count (:writer_name writer))
+        ;; whtspace (js/console.log (count (filter blank? (:writer_name writer))))
+        ;; size (/ name-length whtspace)
+      
         neighbors @(re-frame/subscribe [::subs/writer-matches])
         key     (key-num->letter (:mode_key writer))
         tempo   (:mean_tempo writer)]
     (if (nil? neighbors)
-      [:div.columns.is-centered
-       [:div.column.tile.is-ancestor.is-full-mobile.is-three-quarters-tablet.is-half-fullhd
-        [ellipsis]]]
-      [:div.columns.is-centered
-       [:div.column.tile.is-ancestor.is-full-mobile.is-three-quarters-tablet.is-half-fullhd.writer-card
+      [loading-indicator]
+      [:div.columns.is-centered.is-mobile
+       [:div.column.tile.is-ancestor.is-5-widescreen.is-half-desktop.is-full-mobile.is-three-quarters-tablet.writer-card
         [:div.tile.is-vertical.is-parent
          [:article.box.tile.is-child.pb-6.notification.is-primary
           [:div.columns.is-mobile.is-vcentered
-           [:h1.title.is-size-1-mobile.column.is-two-thirds (:writer_name writer)
-            [:p.subtitle.is-2.is-size-4-mobile (str "IPI: " (:ipi writer))]]
+           [:h1.title.is-size-4-mobile.is-size-2-tablet.column.is-two-thirds 
+            (:writer_name writer)
+            [:p.subtitle.is-2.is-size-3-tablet.is-size-4-mobile (str "IPI: " (:ipi writer))]]
            [ui/music-circle-icon {:size "33%" :class "column is-one-third"}]]
           [:hr]
           [:div.columns.is-mobile.is-centered.stat-panel.pt-3
