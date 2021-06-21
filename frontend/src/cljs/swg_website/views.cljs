@@ -109,12 +109,12 @@
   [name on-click]
   (cond 
     (nil? on-click)
-    [:div.is-clickable.is-size-2.px-3.pb-2 [:a.navbar-item.pb-2] name]
+    [:p.is-clickable.is-size-2.px-3.pb-2 [:a.navbar-item.pb-2] name]
     (coll? on-click)
-    [:div.is-size-2
+    [:p.is-size-2
      [:a.navbar-item.is-2.mt-2 {:href (str "/" (lower-case name)) :on-click #(re-frame/dispatch on-click)} name]]
     (string? on-click)
-    [:div.is-size-2
+    [:p.is-size-2
      [:a.navbar-item.is-2.mt-2 {:href on-click} name]]))
 
 ;; TODO: Link should show router url e.g., /neighbors/1234
