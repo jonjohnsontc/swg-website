@@ -163,7 +163,8 @@
                    :on-success      [::writer-response]
                    :on-failure      [::bad-response]}
       :db  (-> db
-               (assoc :loading? true))})))
+               (assoc :loading? true)
+               (assoc :search-term ""))})))
 
 (re-frame/reg-event-fx
  ::get-random-writer

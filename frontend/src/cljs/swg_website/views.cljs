@@ -97,11 +97,11 @@
    [:a {:href "http://jonj.io"} "Jon Johnson"]])
 
 (defn ellipsis [] ;; Not sure what `sr-only` is referring to
-  [:div [:div.lds-ellipsis [:div] [:div] [:div] [:div] [:span.sr-only "Loading..."]]])
+  [:div [:div.lds-ellipsis [:div] [:div] [:div] [:div] [:span.sr-only.is-size-4 "Loading..."]]])
 
 (defn loading-indicator []
   [:div.columns.is-centered.is-mobile
-   [:div.column.tile.is-ancestor.is-full-mobile.is-three-quarters-tablet.is-half-fullhd
+   [:div.column.mt-6.is-ancestor.is-3-mobile.is-1-tablet.is-1-desktop.is-1-widescreen.is-1-fullhd
     [ellipsis]]])
 
 (defn nav-button
@@ -234,10 +234,10 @@
   (let [post (:0 @(re-frame/subscribe [::subs/about-page]))
         [title & content] (split post #"\n\n")
         html-title (read-mkdown title)]
-    [:div.columns.is-centered
-     [:div.column.is-6.is-8-desktop.is-8-touch
+    [:div.columns.is-centered.is-mobile
+     [:div.column.is-6-fullhd.is-8-desktop.is-8-touch.is-full-mobile
       [:article.content
-       [:p.title.is-2 html-title]
+       [:p.title.is-2.is-size-3-mobile html-title]
        (into [:div] (map par content))]]]))
 
 ;; TODO: This doesn't feel idiomatic
@@ -331,7 +331,7 @@
   "All the info about a writer is displayed in here"
   []
   (let [writer  @(re-frame/subscribe [::subs/current-writer])
-        
+
         ;; I'd like to render fonts dynamically, based on whether
         ;; any part of the name could be broken up because of the 
         ;; user's device. This could be really overengineered though
@@ -341,7 +341,7 @@
         ;; name-length (count (:writer_name writer))
         ;; whtspace (js/console.log (count (filter blank? (:writer_name writer))))
         ;; size (/ name-length whtspace)
-      
+
         neighbors @(re-frame/subscribe [::subs/writer-matches])
         key     (key-num->letter (:mode_key writer))
         tempo   (:mean_tempo writer)]
@@ -352,7 +352,7 @@
         [:div.tile.is-vertical.is-parent
          [:article.box.tile.is-child.pb-6.notification.is-primary
           [:div.columns.is-mobile.is-vcentered
-           [:h1.title.is-size-4-mobile.is-size-2-tablet.column.is-two-thirds 
+           [:h1.title.is-size-4-mobile.is-size-2-tablet.column.is-two-thirds
             (:writer_name writer)
             [:p.subtitle.is-2.is-size-3-tablet.is-size-4-mobile (str "IPI: " (:ipi writer))]]
            [ui/music-circle-icon {:size "33%" :class "column is-one-third"}]]
