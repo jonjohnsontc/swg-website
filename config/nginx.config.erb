@@ -11,6 +11,10 @@ events {
 http {
     root /frontend/resources/public/;
 
+	location / {
+		index index.html
+	}
+
 	gzip on;
 	gzip_comp_level 2;
 	gzip_min_length 512;

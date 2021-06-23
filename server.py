@@ -2,7 +2,7 @@ import os
 import logging
 from typing import Optional, Union
 
-from flask import Flask, send_from_directory
+from flask import Flask
 from flask_cors import CORS
 from flask_marshmallow import Marshmallow
 from flask_restful import Api, Resource
@@ -277,16 +277,13 @@ api.add_resource(Posts, "/posts/<int:ids>")
 def serve(path: str):
     if path.endswith(".css") or path.endswith(".ico") or path.endswith(".css.map"):
         filename = path.split("/")[-1]
-        logging.info(filename)
-        return send_from_directory(app.static_folder, filename)
+        return app.send_static_file(filename)
     elif path.endswith(".js"):
-        return send_from_directory(app.static_folder, "js/compiled/app.js")
+        return app.send_static_file("js/compiled/app.js")
     elif path != "" and os.path.exists(app.static_folder + '/' + path):
-        logging.info(app.static_folder, path)
-        return send_from_directory(app.static_folder, path)
+        return app.send_static_file(path)
     else:
-        logging.info(app.static_folder, 'index.html')
-        return send_from_directory(app.static_folder, 'index.html')
+        return app.send_static_file('index.html')
 
 if __name__ == "__main__":
    app.run(host='0.0.0.0', debug=True)
