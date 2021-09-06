@@ -10,7 +10,7 @@
   #{
     ;; ["/api/neighbors/:wid" :get [:insert-handler-here] :route-name "neighbors" :constraints {:wid #"[0-9]+"}]
     ;; ["/api/writers/name_search/:name" :get [:insert-handler-here] :route-name "writers by name"]
-    ["/api/serwriters/wid/:wid" :get get-writer :route-name :writers-by-wid :constraints {:wid #"[0-9]+"}]
+    ["/api/writers/wid/:wid" :get get-writer :route-name :writers-by-wid :constraints {:wid #"[0-9]+"}]
     ;; ["/api/writers/random" :get [:insert-handler-here] :route-name "random writer"]
     })
 
